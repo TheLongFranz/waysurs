@@ -1,0 +1,64 @@
+{
+    "version": 6,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 28,
+        "patch": 1
+    },
+    "configurePresets": [
+        {
+            "name": "config-base",
+            "hidden": true,
+            "displayName": "base Configuration",
+            "description": "Default build using Ninja generator",
+            "generator": "Ninja",
+            "toolchainFile": "cmake/llvm-toolchain.cmake",
+            "cacheVariables": {
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "CMAKE_CXX_STANDARD": "23",
+                "CMAKE_CXX_STANDARD_REQUIRED": "ON",
+                "CMAKE_CXX_EXTENSIONS": "OFF"
+            }
+        },
+        {
+            "name": "debug",
+            "displayName": "Debug with Custom Clang",
+            "description": "Unoptimised build with full debug symbols",
+            "inherits": "config-base",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_CXX_FLAGS": "-Wall -Wextra -Wpedantic -Wshadow -Wnon-virtual-dtor -Wno-missing-designated-field-initializers -Wno-system-headers -ftrivial-auto-var-init=pattern -Wunreachable-code -Wuninitialized -Wold-style-cast -Werror -Og -fdiagnostics-color=always -ftemplate-backtrace-limit=0 -fsanitize=undefined -fno-omit-frame-pointer"
+            }
+        },
+        {
+            "name": "release",
+            "displayName": "Release with Custom Clang",
+            "description": "Full optimisation with no debug symbols",
+            "inherits": "config-base",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_CXX_FLAGS": "-Wall -Wextra -Wpedantic -Wshadow -Wnon-virtual-dtor -Wno-missing-designated-field-initializers -Wno-system-headers -ftrivial-auto-var-init=pattern -Wunreachable-code -Wuninitialized -Wold-style-cast -Werror -O3 -D_FORTIFY_SOURCE=2 -fstack-protector-strong -flto -fdiagnostics-color=always -ftemplate-backtrace-limit=0"
+            }
+        },
+        {
+            "name": "relwithdebinfo",
+            "displayName": "RelWithDebInfo with Custom Clang",
+            "description": "Optimised build with debug symbols (good for profiling)",
+            "inherits": "config-base",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+                "CMAKE_CXX_FLAGS": "-Wall -Wextra -Wpedantic -Wshadow -Wnon-virtual-dtor -Wno-missing-designated-field-initializers -Wno-system-headers -ftrivial-auto-var-init=pattern -Wunreachable-code -Wuninitialized -Wold-style-cast -Werror -O3 -D_FORTIFY_SOURCE=2 -fstack-protector-strong"
+            }
+        },
+        {
+            "name": "minsizerel",
+            "displayName": "MinSizeRel with Custom Clang",
+            "description": "Optimised for minimum size",
+            "inherits": "config-base",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "MinSizeRel",
+                "CMAKE_CXX_FLAGS": "-Wall -Wextra -Wpedantic -Wshadow -Wnon-virtual-dtor -Wno-missing-designated-field-initializers -Wno-system-headers -ftrivial-auto-var-init=pattern -Wunreachable-code -Wuninitialized -Wold-style-cast -Werror -O3 -D_FORTIFY_SOURCE=2 -fstack-protector-strong -flto"
+            }
+        }
+    ]
+}
