@@ -183,7 +183,7 @@ public:
     if (m_port_id = ::open(config.port_name.c_str(), O_RDWR | O_NOCTTY);
         m_port_id < 0) {
       return std::unexpected(
-          make_error(error_type::open, std::format("Error opening port\n")));
+          make_error(error_type::open, "Error opening port\n"));
     }
 
     auto tty{build_termios(config)};
@@ -211,7 +211,7 @@ public:
     m_config = std::nullopt;
     if (result < 0) {
       return std::unexpected(
-          make_error(error_type::close, std::format("Error closing port\n")));
+          make_error(error_type::close, "Error closing port\n"));
     }
     return {};
   }
@@ -224,7 +224,7 @@ public:
           ::read(m_port_id, read_buf.data(), read_buf.size());
       if (bytes_read < 0) {
         return std::unexpected(
-            make_error(error_type::read, std::format("Error reading buffer")));
+            make_error(error_type::read, "Error reading buffer"));
       }
 
       read_buf.resize(bytes_read);
@@ -241,8 +241,8 @@ public:
           !(result < 0)) {
         return static_cast<std::size_t>(result);
       }
-      return std::unexpected(make_error(
-          error_type::write, std::format("Error writing to buffer\n")));
+      return std::unexpected(
+          make_error(error_type::write, "Error writing to buffer\n"));
     }
     return std::unexpected(
         make_error(error_type::config, "Port has not been configured."));
