@@ -46,8 +46,7 @@ TEST_CASE("write to port", "[serial]") {
 
   auto port{waysurs::serial_port()};
 
-  const auto open_result{port.open({.port_name = port_tx_name})};
-  check(open_result);
+  check(port.open({.port_name = port_tx_name}));
 
   constexpr std::string_view msg{"hello\r"};
 
@@ -68,11 +67,8 @@ TEST_CASE("read(): succeeds with roundtrip message to virtual tx/rx pair",
   auto port_tx{waysurs::serial_port()};
   auto port_rx{waysurs::serial_port()};
 
-  auto open_tx_result{port_tx.open({.port_name = port_tx_name})};
-  check(open_tx_result);
-
-  auto open_rx_result{port_rx.open({.port_name = port_rx_name})};
-  check(open_rx_result);
+  check(port_tx.open({.port_name = port_tx_name}));
+  check(port_rx.open({.port_name = port_rx_name}));
 
   constexpr std::string_view msg{"hello\r"};
 

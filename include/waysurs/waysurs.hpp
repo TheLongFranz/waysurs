@@ -28,7 +28,6 @@ struct serial_config {
   std::chrono::milliseconds inter_byte_timeout{100};
 
   bool operator==(const serial_config &) const = default;
-  bool operator!=(const serial_config &) const = default;
 };
 
 class serial_port {

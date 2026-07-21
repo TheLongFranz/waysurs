@@ -27,7 +27,6 @@ int main() {
 ```
 
 ### todo
-1. add timeout to config
 1. profiling
 1. fuzzing
 1. f/a sanitizer
