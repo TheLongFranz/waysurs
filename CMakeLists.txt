@@ -4,7 +4,9 @@ project(waysurs)
 
 add_subdirectory(src)
 
-include(CTest)
-if(BUILD_TESTING)
-    add_subdirectory(test)
+if(PROJECT_IS_TOP_LEVEL)
+    include(CTest)
+    if(BUILD_TESTING)
+        add_subdirectory(test)
+    endif()
 endif()
