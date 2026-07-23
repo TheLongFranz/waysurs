@@ -89,7 +89,6 @@ int main() {
 ### Todo
 1. custom baud rates
 1. port enumeration
-1. devcontainer (linux)
 1. fuzzing
 1. f/a sanitizer
 1. CI/CD
