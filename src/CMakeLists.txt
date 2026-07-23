@@ -16,3 +16,5 @@ elseif(UNIX)
 endif()
 
 set_property(TARGET waysurs_waysurs PROPERTY EXPORT_NAME waysurs)
+
+target_compile_features(waysurs_waysurs PUBLIC cxx_std_23)
