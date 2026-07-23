@@ -42,7 +42,6 @@
 
 # Build directories
 out/
-out/
 out-*/
 
 # CMake generated files

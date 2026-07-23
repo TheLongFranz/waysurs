@@ -7,6 +7,7 @@
 #include <expected>
 #include <format>
 #include <optional>
+#include <ratio>
 #include <span>
 #include <string_view>
 #include <vector>
@@ -60,8 +61,9 @@ private:
     default:
       return std::unexpected(make_error(
           error_type::baud_rate,
-          std::format("Baud rate '{}' is not standard and could not be applied",
-                      rate)));
+          std::format(
+              "Baud rate '{}' is not standard and could not be applied\n",
+              rate)));
     }
   }
 
@@ -77,10 +79,9 @@ private:
   }
 
   [[nodiscard]] static auto
-  ms_to_vtime(const std::chrono::milliseconds &seconds) noexcept
-      -> std::uint8_t {
-    // relying on implicit conversions is quite sad
-    return seconds.count() * 0.01;
+  ms_to_vtime(const std::chrono::milliseconds &ms) noexcept -> std::uint8_t {
+    using deciseconds = std::chrono::duration<std::uint8_t, std::deci>;
+    return std::chrono::floor<deciseconds>(ms).count();
   }
 
   [[nodiscard]] static auto build_termios(const serial_config &config) noexcept
@@ -149,7 +150,9 @@ private:
       break;
     }
 
+    // implement apply_timeout()
     tty.c_cc[VTIME] = ms_to_vtime(config.inter_byte_timeout);
+
     tty.c_cc[VMIN] = config.min_bytes;
 
     if (const auto result{apply_baud_rate(tty, config.baud_rate)};
@@ -176,8 +179,7 @@ public:
     if (config.port_name.empty()) {
       return std::unexpected(make_error(
           error_type::config,
-          std::format(
-              "Failed to open port: name empty or port does not exist")));
+          "Failed to open port: name empty or port does not exist\n"));
     }
 
     if (m_port_id = ::open(config.port_name.c_str(), O_RDWR | O_NOCTTY);
@@ -194,8 +196,7 @@ public:
     if (tcsetattr(m_port_id, TCSANOW, &tty.value()) != 0) {
       const auto _{close()};
       return std::unexpected(
-          make_error(error_type::config,
-                     std::format("OS Error setting port attributes\n")));
+          make_error(error_type::config, "OS Error setting port attributes\n"));
     }
     m_config = config;
     return {};
@@ -224,14 +225,14 @@ public:
           ::read(m_port_id, read_buf.data(), read_buf.size());
       if (bytes_read < 0) {
         return std::unexpected(
-            make_error(error_type::read, "Error reading buffer"));
+            make_error(error_type::read, "Error reading buffer\n"));
       }
 
       read_buf.resize(bytes_read);
       return read_buf;
     }
     return std::unexpected(
-        make_error(error_type::config, "Port has not been configured."));
+        make_error(error_type::config, "Port has not been configured\n"));
   }
 
   [[nodiscard]] auto write(std::span<const std::byte> buffer)
@@ -245,7 +246,7 @@ public:
           make_error(error_type::write, "Error writing to buffer\n"));
     }
     return std::unexpected(
-        make_error(error_type::config, "Port has not been configured."));
+        make_error(error_type::config, "Port has not been configured\n"));
   }
 
   [[nodiscard]] auto write(const std::string_view buffer)

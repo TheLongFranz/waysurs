@@ -39,7 +39,6 @@ IncludeCategories:
   - Regex: ".*"
     Priority: 3
 IncludeIsMainRegex: "([-_](test|unittest))?$"
-IndentCaseLabels: true
 IndentWidth: 2
 InsertNewlineAtEOF: false
 MacroBlockBegin: ""
@@ -55,6 +54,14 @@ SpacesInConditionalStatement: false
 SpacesInCStyleCastParentheses: false
 SpacesInParentheses: false
 TabWidth: 2
+AllowShortCaseLabelsOnASingleLine: true
+AllowShortCaseExpressionOnASingleLine: true
+AlignConsecutiveShortCaseStatements:
+Enabled: true
+  AcrossEmptyLines: true
+  AcrossComments: true
+  AlignCaseColons: false
+IndentCaseLabels: false
 AllowShortFunctionsOnASingleLine:
   Empty: true
   Inline: true

@@ -1,10 +1,62 @@
-# Why Are You Still Using RS232?
+# WAYSURS - Why Are You Still Using RS232?
 
 ## What is WAYSURS for?
 
 Unfortunately, RS232 is still a common interface on some devices that we have to talk to. 
 
-### usage
+### Prerequisites
+
+**MacOS**
+```bash
+brew install llvm@20 ninja cmake 
+# socat is required for tests
+brew install socat
+```
+
+**Linux**
+```bash
+apt install llvm-20 ninja-build cmake
+# socat is required for tests
+apt install socat
+```
+
+**Other**
+```bash
+choco install llvm --version=20.1.8
+```
+
+### Installation (CMake)
+
+```cmake
+cmake_minimum_required(VERSION 3.28.1)
+
+project(something_serial)
+
+include(FetchContent)
+
+FetchContent_Declare(
+    waysurs
+    GIT_REPOSITORY https://github.com/TheLongFranz/waysurs.git
+    GIT_TAG main
+)
+
+FetchContent_MakeAvailable(waysurs)
+
+target_link_libraries(${PROJECT_NAME} PRIVATE waysurs::waysurs)
+```
+
+### Building (MacOS / Linux)
+
+Building WAYSURS requires a **C++23** capable compiler. There is a toolchain already defined for **LLVM20** which sets up **clangd/tidy/format** with cmake generated compile_commands.json. If you want to user another C++ compiler you can override the toolchain with your own **CMakeUserPresets.json**.
+
+```bash
+git clone https://github.com/TheLongFranz/waysurs.git
+cd waysurs
+cmake --preset release -B out/build/release
+cmake --build out/build/release
+```
+
+### Usage
 
 ```cpp
 #include<print>
@@ -13,11 +65,10 @@ Unfortunately, RS232 is still a common interface on some devices that we have to
 
 int main() {
   waysurs::serial_port port;
-  if (port.open(
-          waysurs::serial_config{.port_name = "/dev/ttyUSB0",
-                                 .baud_rate = 115200,
-                                 .parity = waysurs::parity::none,
-                                 .data_bits = waysurs::data_bits::eight})) {
+  if (port.open(waysurs::serial_config{.port_name = "/dev/ttyUSB0",
+                                       .baud_rate = 115200,
+                                       .parity = waysurs::parity::none,
+                                       .data_bits = waysurs::data_bits::eight})) {
     if (const auto bytes_written{port.write("hello world!")};
         bytes_written.has_value()) {
       std::println("{} bytes written successfully", bytes_written.value());
@@ -28,8 +79,10 @@ int main() {
 }
 ```
 
-### todo
-1. profiling
+### Todo
+1. custom baud rates
+1. port enumeration
+1. devcontainer (linux)
 1. fuzzing
 1. f/a sanitizer
 1. CI/CD

@@ -1,7 +1,10 @@
 #include <cstdlib>
+#include <format>
 #include <span>
+#include <string>
 #include <string_view>
 
+#include <catch2/catch_message.hpp>
 #include <catch2/catch_test_macros.hpp>
 
 #include <waysurs/waysurs.hpp>
