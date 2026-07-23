@@ -20,8 +20,8 @@ apt install llvm-20 ninja-build cmake
 apt install socat
 ```
 
-**Other**
-```bash
+**Windows**
+```powershell
 choco install llvm --version=20.1.8
 ```
 
