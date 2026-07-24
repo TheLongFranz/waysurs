@@ -1,21 +1,14 @@
+#include <cerrno>
 #include <chrono>
 #include <cstddef>
 #include <cstdint>
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
 #include <expected>
-#include <format>
 #include <optional>
-#include <ratio>
 #include <span>
 #include <string_view>
-#include <vector>
 
 // Posix headers
-#include <cerrno>
 #include <fcntl.h>
-#include <sys/fcntl.h>
 #include <termios.h>
 #include <unistd.h>
 
@@ -25,6 +18,7 @@
  */
 
 #include "waysurs/detail/error.hpp"
+#include <vector>
 #include <waysurs/waysurs.hpp>
 
 namespace waysurs {
