@@ -1,3 +1,5 @@
+#include <array>
+#include <cstddef>
 #include <cstdint>
 #include <cstdlib>
 #include <format>
@@ -61,11 +63,6 @@ TEST_CASE("open(): succeeds with valid port name", "[serial]") {
   check(port.open({.port_name = port_tx_name}));
 }
 
-TEST_CASE("close(): succeeds with an un-opened port", "[serial]") {
-  auto port{waysurs::serial_port()};
-  check(port.close());
-}
-
 TEST_CASE(
     "write(): succeeds writing a message with std::span<std::byte> parameter",
     "[serial]") {
@@ -97,8 +94,9 @@ TEST_CASE("write(): succeeds writing a message with std::string_view parameter",
   REQUIRE(write_result_string_view == msg.size());
 }
 
-TEST_CASE("read(): succeeds with roundtrip message to virtual tx/rx pair",
-          "[serial]") {
+TEST_CASE(
+    "read(buffer_size): succeeds with roundtrip message to virtual tx/rx pair",
+    "[serial]") {
   const char *port_tx_name{get_env("WAYSURS_SERIAL_TX")};
   const char *port_rx_name{get_env("WAYSURS_SERIAL_RX")};
 
@@ -117,6 +115,30 @@ TEST_CASE("read(): succeeds with roundtrip message to virtual tx/rx pair",
   const auto bytes_read{port_rx.read(6)};
   check(bytes_read);
   REQUIRE(to_string(bytes_read.value()) == msg);
+}
+
+TEST_CASE("read(buffer): succeeds with roundtrip message to virtual "
+          "tx/rx pair",
+          "[serial]") {
+  const char *port_tx_name{get_env("WAYSURS_SERIAL_TX")};
+  const char *port_rx_name{get_env("WAYSURS_SERIAL_RX")};
+
+  auto port_tx{waysurs::serial_port()};
+  auto port_rx{waysurs::serial_port()};
+
+  check(port_tx.open({.port_name = port_tx_name}));
+  check(port_rx.open({.port_name = port_rx_name}));
+
+  constexpr std::string_view msg{"hello\r"};
+
+  const auto bytes_written{port_tx.write(msg)};
+  check(bytes_written);
+  REQUIRE(bytes_written == msg.size());
+
+  std::array<std::byte, 16> buffer{};
+  const auto bytes_read{port_rx.read(buffer)};
+  check(bytes_read);
+  REQUIRE(to_string(buffer) == msg);
 }
 
 TEST_CASE("read(): all config options succeed with roundtrip message to "

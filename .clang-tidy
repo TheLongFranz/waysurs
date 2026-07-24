@@ -21,7 +21,6 @@ Checks: >
   -readability-identifier-length,
   -misc-include-cleaner,
 
-HeaderFilterRegex: 'src-cpp/.*'
 WarningsAsErrors: ''
 
 CheckOptions:

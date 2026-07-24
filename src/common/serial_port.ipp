@@ -22,6 +22,11 @@ auto serial_port::read(std::size_t buffer_size)
   return p_impl->read(buffer_size);
 }
 
+auto serial_port::read(std::span<std::byte> buffer)
+    -> std::expected<std::size_t, error> {
+  return p_impl->read(buffer);
+}
+
 auto serial_port::write(std::span<const std::byte> buffer)
     -> std::expected<std::size_t, error> {
   return p_impl->write(buffer);

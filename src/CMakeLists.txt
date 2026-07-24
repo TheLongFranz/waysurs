@@ -2,9 +2,7 @@ add_library(waysurs_waysurs STATIC)
 add_library(waysurs::waysurs ALIAS waysurs_waysurs)
 
 target_include_directories(
-    waysurs_waysurs ${warning_guard}
-    PUBLIC
-    "\$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
+    waysurs_waysurs PUBLIC "\$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
 )
 
 if(WIN32)

@@ -61,8 +61,8 @@ public:
   serial_port &operator=(const serial_port &other) = delete;
 
   /// @param config - config struct defining port configuration
-  /// @note returns a no-op success if a port was never opened, void on
-  /// success, error on failure
+  /// @note returns a no-op success if a port was never opened or if the config
+  /// hasn't changed, void on success, error on failure
   [[nodiscard]] auto open(const serial_config &config)
       -> std::expected<void, error>;
 
@@ -71,10 +71,19 @@ public:
   [[nodiscard]] auto close() -> std::expected<void, error>;
 
   /// @param buffer_size - The number of bytes requested from the read buffer
-  /// @returns - number of bytes successfully written on success, error on
+  /// @note this functions allocates a vector of size = buffer_size on every
+  /// call, this vector is resized to the number of bytes read. If you want
+  /// non-allocating reads use the read(std::span<std::byte>) overload
+  /// @returns - a vector of bytes successfully written on success, error on
   /// failure
   [[nodiscard]] auto read(std::size_t buffer_size)
       -> std::expected<std::vector<std::byte>, error>;
+
+  /// @param buffer - The buffer provided by the caller
+  /// @returns - number of bytes successfully written on success, error on
+  /// failure
+  [[nodiscard]] auto read(std::span<std::byte> buffer)
+      -> std::expected<std::size_t, error>;
 
   /// @param buffer - Span of immutable bytes, this is a 1-1 representation of
   /// the data passed into the serial buffer

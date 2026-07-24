@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cerrno>
 #include <chrono>
 #include <cstddef>
@@ -76,7 +77,8 @@ private:
   [[nodiscard]] static auto
   ms_to_vtime(const std::chrono::milliseconds &ms) noexcept -> std::uint8_t {
     using deciseconds = std::chrono::duration<std::uint8_t, std::deci>;
-    return std::chrono::floor<deciseconds>(ms).count();
+    return std::clamp(
+        static_cast<int>(std::chrono::floor<deciseconds>(ms).count()), 0, 255);
   }
 
   [[nodiscard]] static auto build_termios(const serial_config &config) noexcept
@@ -225,6 +227,22 @@ public:
 
       read_buf.resize(bytes_read);
       return read_buf;
+    }
+    return std::unexpected(
+        make_error(error_type::config, "Port has not been configured\n"));
+  }
+
+  [[nodiscard]] auto read(std::span<std::byte> buffer)
+      -> std::expected<std::size_t, error> {
+    if (m_config.has_value()) {
+      // std::vector<std::byte> read_buf(buffer_size);
+      const auto bytes_read = ::read(m_port_id, buffer.data(), buffer.size());
+      if (bytes_read < 0) {
+        return std::unexpected(
+            make_error(error_type::read, "Error reading buffer\n"));
+      }
+
+      return bytes_read;
     }
     return std::unexpected(
         make_error(error_type::config, "Port has not been configured\n"));
