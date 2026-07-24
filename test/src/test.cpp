@@ -1,3 +1,4 @@
+#include <cstdint>
 #include <cstdlib>
 #include <format>
 #include <span>
@@ -6,6 +7,7 @@
 
 #include <catch2/catch_message.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators.hpp>
 
 #include <waysurs/waysurs.hpp>
 
@@ -31,10 +33,25 @@ auto to_string(const auto &vec) -> std::string {
 }
 } // namespace
 
+TEST_CASE("open(): fails with non-standard baud rates", "[serial]") {
+  const char *port_tx_name(get_env("WAYSURS_SERIAL_TX"));
+  auto port{waysurs::serial_port()};
+
+  const auto baud_rates =
+      GENERATE(as<std::uint32_t>{}, 0, 42, 42, 451, 123'456'789);
+  REQUIRE(!(port.open({.port_name = port_tx_name, .baud_rate = baud_rates})));
+}
+
 TEST_CASE("open(): fails with invalid port name", "[serial]") {
   auto port{waysurs::serial_port()};
   const auto result{
       port.open(waysurs::serial_config{.port_name = "bob/hoskins"})};
+  REQUIRE(!(result.has_value()));
+}
+
+TEST_CASE("open(): fails with empty port name", "[serial]") {
+  auto port{waysurs::serial_port()};
+  const auto result{port.open(waysurs::serial_config{.port_name = ""})};
   REQUIRE(!(result.has_value()));
 }
 
@@ -44,7 +61,14 @@ TEST_CASE("open(): succeeds with valid port name", "[serial]") {
   check(port.open({.port_name = port_tx_name}));
 }
 
-TEST_CASE("write to port", "[serial]") {
+TEST_CASE("close(): succeeds with an un-opened port", "[serial]") {
+  auto port{waysurs::serial_port()};
+  check(port.close());
+}
+
+TEST_CASE(
+    "write(): succeeds writing a message with std::span<std::byte> parameter",
+    "[serial]") {
   const char *port_tx_name{get_env("WAYSURS_SERIAL_TX")};
 
   auto port{waysurs::serial_port()};
@@ -56,6 +80,17 @@ TEST_CASE("write to port", "[serial]") {
   const auto write_result_byte_span(port.write(std::as_bytes(std::span{msg})));
   check(write_result_byte_span);
   REQUIRE(write_result_byte_span == msg.size());
+}
+
+TEST_CASE("write(): succeeds writing a message with std::string_view parameter",
+          "[serial]") {
+  const char *port_tx_name{get_env("WAYSURS_SERIAL_TX")};
+
+  auto port{waysurs::serial_port()};
+
+  check(port.open({.port_name = port_tx_name}));
+
+  constexpr std::string_view msg{"hello\r"};
 
   const auto write_result_string_view{port.write(msg)};
   check(write_result_string_view);
@@ -72,6 +107,54 @@ TEST_CASE("read(): succeeds with roundtrip message to virtual tx/rx pair",
 
   check(port_tx.open({.port_name = port_tx_name}));
   check(port_rx.open({.port_name = port_rx_name}));
+
+  constexpr std::string_view msg{"hello\r"};
+
+  const auto bytes_written{port_tx.write(msg)};
+  check(bytes_written);
+  REQUIRE(bytes_written == msg.size());
+
+  const auto bytes_read{port_rx.read(6)};
+  check(bytes_read);
+  REQUIRE(to_string(bytes_read.value()) == msg);
+}
+
+TEST_CASE("read(): all config options succeed with roundtrip message to "
+          "virtual tx/rx pair",
+          "[serial]") {
+  const char *port_tx_name{get_env("WAYSURS_SERIAL_TX")};
+  const char *port_rx_name{get_env("WAYSURS_SERIAL_RX")};
+
+  auto port_tx{waysurs::serial_port()};
+  auto port_rx{waysurs::serial_port()};
+
+  const auto baud_rates =
+      GENERATE(as<std::uint32_t>{}, 50, 300, 600, 1200, 2400, 4800, 9600, 19200,
+               38400, 57600, 115200, 230400);
+  const auto parities = GENERATE(waysurs::parity::even, waysurs::parity::odd,
+                                 waysurs::parity::none);
+  const auto data_bits =
+      GENERATE(waysurs::data_bits::five, waysurs::data_bits::six,
+               waysurs::data_bits::seven, waysurs::data_bits::eight);
+  const auto flow_control =
+      GENERATE(waysurs::flow_control::none, waysurs::flow_control::hardware,
+               waysurs::flow_control::software);
+  const auto stop_bits =
+      GENERATE(waysurs::stop_bits::one, waysurs::stop_bits::two);
+
+  check(port_tx.open({.port_name = port_tx_name,
+                      .baud_rate = baud_rates,
+                      .parity = parities,
+                      .stop_bits = stop_bits,
+                      .data_bits = data_bits,
+                      .flow_control = flow_control}));
+
+  check(port_rx.open({.port_name = port_rx_name,
+                      .baud_rate = baud_rates,
+                      .parity = parities,
+                      .stop_bits = stop_bits,
+                      .data_bits = data_bits,
+                      .flow_control = flow_control}));
 
   constexpr std::string_view msg{"hello\r"};
 
