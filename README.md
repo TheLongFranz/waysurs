@@ -2,25 +2,25 @@
 
 ## What is WAYSURS for?
 
-Unfortunately, RS232 is still a common interface on some devices that we have to talk to. 
+
 
 ### Prerequisites
 
 **MacOS**
 ```bash
 brew install llvm@20 ninja cmake 
-# socat is required for tests
-brew install socat
+# catch2 & socat are only required for building tests, not consuming the library
+brew install catch2 socat
 ```
 
 **Linux**
 ```bash
 apt install llvm-20 ninja-build cmake
-# socat is required for tests
-apt install socat
+# catch2 & socat are only required for building tests, not consuming the library
+apt install catch2 socat
 ```
 
-**Windows**
+**Windows (Currently Unsupported)**
 ```powershell
 choco install llvm --version=20.1.8
 ```
@@ -49,7 +49,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE waysurs::waysurs)
 
 ### Building (MacOS / Linux)
 
-Building WAYSURS requires a **C++23** capable compiler. There is a toolchain already defined for **LLVM20** which sets up **clangd/tidy/format** with cmake generated compile_commands.json. If you want to user another C++ compiler you can override the toolchain with your own **CMakeUserPresets.json**.
+Building WAYSURS requires a **C++23** capable compiler. There is a toolchain already defined for **LLVM20** which sets up **clangd/tidy/format** with cmake generated compile_commands.json. If you want to use another C++ compiler you can override the toolchain with your own **CMakeUserPresets.json**.
 
 ```bash
 git clone https://github.com/TheLongFranz/waysurs.git
@@ -67,12 +67,13 @@ cmake --build out/build/release
 
 int main() {
   waysurs::serial_port port;
-
-  if (const auto port_opened = port.open(
-          waysurs::serial_config{.port_name = "/dev/ttyUSB0",
-                                 .baud_rate = 115200,
-                                 .parity = waysurs::parity::none,
-                                 .data_bits = waysurs::data_bits::eight});
+  
+  if (const auto port_opened =
+          port.open(waysurs::serial_config{.port_name = "/dev/ttyUSB0",
+                                           .baud_rate = 115200,
+                                           .data_bits = waysurs::data_bits::eight,
+                                           .data_bits = waysurs::stop_bits::one,
+                                           .parity = waysurs::parity::none});
       port_opened.has_value()) {
     if (const auto bytes_written{port.write("hello world!")};
         bytes_written.has_value()) {
@@ -80,15 +81,15 @@ int main() {
     } else {
       std::println("{}", bytes_written.error());
     }
-  } else {
-    std::println("{}", port_opened.error()); // prints system error if present
   }
+  std::println("{}", port_opened.error()); // prints system error if present
 }
 ```
 
 ### Todo
 1. custom baud rates
 1. port enumeration
+1. Windows
 1. fuzzing
 1. f/a sanitizer
 1. CI/CD

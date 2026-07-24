@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <expected>
 #include <optional>
+#include <print>
 #include <span>
 #include <string_view>
 
@@ -197,7 +198,7 @@ public:
   }
 
   auto close() -> std::expected<void, error> {
-    if (!(m_config.has_value())) {
+    if (m_port_id >= 0) {
       return {};
     }
 
@@ -233,7 +234,7 @@ public:
       -> std::expected<std::size_t, error> {
     if (m_config.has_value()) {
       if (const auto result = ::write(m_port_id, buffer.data(), buffer.size());
-          !(result < 0)) {
+          result >= 0) {
         return static_cast<std::size_t>(result);
       }
       return std::unexpected(

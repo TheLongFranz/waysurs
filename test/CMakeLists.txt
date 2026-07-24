@@ -1,7 +1,8 @@
 add_executable(tests src/test.cpp)
 
 if(WIN32)
-    target_sources(tests PRIVATE platform/windows/serial_fixture.cpp)
+    message(FATAL_ERROR "Windows is not currently supported.")
+    # target_sources(tests PRIVATE platform/windows/serial_fixture.cpp)
 elseif(APPLE OR UNIX)
     target_sources(tests PRIVATE platform/posix/serial_fixture.cpp)
 endif()
