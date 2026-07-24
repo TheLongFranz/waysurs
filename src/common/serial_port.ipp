@@ -1,33 +1,32 @@
 #include <expected>
 #include <memory>
-#include <string>
 
 #include <waysurs/waysurs.hpp>
 
 namespace waysurs {
 
-[[nodiscard]] serial_port::serial_port() : p_impl(std::make_unique<impl>()) {}
+serial_port::serial_port() : p_impl(std::make_unique<impl>()) {}
 serial_port::~serial_port() = default;
 
-[[nodiscard]] auto serial_port::open(const serial_config &config)
+auto serial_port::open(const serial_config &config)
     -> std::expected<void, error> {
   return p_impl->open(config);
 }
 
-[[nodiscard]] auto serial_port::close() -> std::expected<void, error> {
+auto serial_port::close() -> std::expected<void, error> {
   return p_impl->close();
 }
 
-[[nodiscard]] auto serial_port::read(std::size_t buffer_size)
+auto serial_port::read(std::size_t buffer_size)
     -> std::expected<std::vector<std::byte>, error> {
   return p_impl->read(buffer_size);
 }
 
-[[nodiscard]] auto serial_port::write(std::span<const std::byte> buffer)
+auto serial_port::write(std::span<const std::byte> buffer)
     -> std::expected<std::size_t, error> {
   return p_impl->write(buffer);
 }
-[[nodiscard]] auto serial_port::write(const std::string_view buffer)
+auto serial_port::write(const std::string_view buffer)
     -> std::expected<std::size_t, error> {
   return p_impl->write(buffer);
 }
