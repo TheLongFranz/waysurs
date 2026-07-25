@@ -99,6 +99,18 @@ TEST_CASE("write(): succeeds writing a message with std::string_view parameter",
   REQUIRE(write_result_string_view == msg.size());
 }
 
+TEST_CASE("read(): before opening port fails with error::config") {}
+
+TEST_CASE("write(): before opening port fails with error::config") {}
+
+TEST_CASE("read -> write binary roundtrip") {}
+
+TEST_CASE("open(): open -> close -> open succeeds with the same config") {}
+
+TEST_CASE("open(): open -> open(new config) succeeds") {}
+
+TEST_CASE("move semantics: moved from ") {}
+
 TEST_CASE(
     "read(buffer_size): succeeds with roundtrip message to virtual tx/rx pair",
     "[serial]") {
@@ -144,12 +156,13 @@ TEST_CASE("read(buffer): succeeds with roundtrip message to virtual "
 
   const auto bytes_written{port_tx.write(msg)};
   check(bytes_written);
-  REQUIRE(bytes_written == msg.size());
+  REQUIRE(bytes_written.value() == msg.size());
 
   std::array<std::byte, 16> buffer{};
   const auto bytes_read{port_rx.read(buffer)};
   check(bytes_read);
-  REQUIRE(to_string(std::span{buffer}.first(*bytes_read)) == msg);
+  REQUIRE(bytes_read.value() == 6);
+  REQUIRE(to_string(std::span{buffer}.first(bytes_read.value())) == msg);
 }
 
 TEST_CASE("read(): all config options succeed with roundtrip message to "
@@ -196,9 +209,30 @@ TEST_CASE("read(): all config options succeed with roundtrip message to "
 
   const auto bytes_written{port_tx.write(msg)};
   check(bytes_written);
-  REQUIRE(bytes_written == msg.size());
+  REQUIRE(bytes_written.value() == msg.size());
 
   const auto bytes_read{port_rx.read(6)};
   check(bytes_read);
   REQUIRE(to_string(bytes_read.value()) == msg);
+}
+
+TEST_CASE("README") {
+  waysurs::serial_port port;
+
+  if (const auto port_opened = port.open(
+          waysurs::serial_config{.port_name = "/dev/ttyUSB0",
+                                 .baud_rate = 115200,
+                                 .parity = waysurs::parity::none,
+                                 .stop_bits = waysurs::stop_bits::one,
+                                 .data_bits = waysurs::data_bits::eight});
+      port_opened) {
+    if (const auto bytes_written{port.write("hello world!")};
+        bytes_written.has_value()) {
+      std::println("{} bytes written successfully", bytes_written.value());
+    } else {
+      std::println("{}", bytes_written.error());
+    }
+  } else {
+    std::println("{}", port_opened.error()); // prints system error if present
+  }
 }
