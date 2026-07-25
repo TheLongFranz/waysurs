@@ -67,22 +67,23 @@ cmake --build out/build/release
 
 int main() {
   waysurs::serial_port port;
-  
-  if (const auto port_opened =
-          port.open(waysurs::serial_config{.port_name = "/dev/ttyUSB0",
-                                           .baud_rate = 115200,
-                                           .data_bits = waysurs::data_bits::eight,
-                                           .data_bits = waysurs::stop_bits::one,
-                                           .parity = waysurs::parity::none});
-      port_opened.has_value()) {
+
+  if (const auto port_opened = port.open(
+          waysurs::serial_config{.port_name = "/dev/ttyUSB0",
+                                 .baud_rate = 115200,
+                                 .parity = waysurs::parity::none,
+                                 .stop_bits = waysurs::stop_bits::one,
+                                 .data_bits = waysurs::data_bits::eight});
+      port_opened) {
     if (const auto bytes_written{port.write("hello world!")};
         bytes_written.has_value()) {
       std::println("{} bytes written successfully", bytes_written.value());
     } else {
       std::println("{}", bytes_written.error());
     }
+  } else {
+    std::println("{}", port_opened.error()); // prints system error if present
   }
-  std::println("{}", port_opened.error()); // prints system error if present
 }
 ```
 
