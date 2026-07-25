@@ -66,6 +66,8 @@ public:
   [[nodiscard]] auto open(const serial_config &config)
       -> std::expected<void, error>;
 
+  [[nodiscard]] auto is_open() -> bool;
+
   /// @note returns a no-op success if a port was never opened, void on
   /// success, error on failure
   [[nodiscard]] auto close() -> std::expected<void, error>;

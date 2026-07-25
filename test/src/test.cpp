@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <format>
+#include <print>
 #include <span>
 #include <string>
 #include <string_view>
@@ -46,21 +47,21 @@ TEST_CASE("open(): fails with non-standard baud rates", "[serial]") {
 
 TEST_CASE("open(): fails with invalid port name", "[serial]") {
   auto port{waysurs::serial_port()};
-  const auto result{
-      port.open(waysurs::serial_config{.port_name = "bob/hoskins"})};
-  REQUIRE(!(result.has_value()));
+  REQUIRE(!(port.open(waysurs::serial_config{.port_name = "bob/hoskins"}))
+               .has_value());
 }
 
 TEST_CASE("open(): fails with empty port name", "[serial]") {
   auto port{waysurs::serial_port()};
-  const auto result{port.open(waysurs::serial_config{.port_name = ""})};
-  REQUIRE(!(result.has_value()));
+  REQUIRE(!(port.open(waysurs::serial_config{.port_name = ""})));
+  REQUIRE(!(port.is_open()));
 }
 
 TEST_CASE("open(): succeeds with valid port name", "[serial]") {
   const char *port_tx_name(get_env("WAYSURS_SERIAL_TX"));
   auto port{waysurs::serial_port()};
   check(port.open({.port_name = port_tx_name}));
+  REQUIRE(port.is_open());
 }
 
 TEST_CASE(
@@ -71,6 +72,8 @@ TEST_CASE(
   auto port{waysurs::serial_port()};
 
   check(port.open({.port_name = port_tx_name}));
+
+  REQUIRE(port.is_open());
 
   constexpr std::string_view msg{"hello\r"};
 
@@ -86,6 +89,8 @@ TEST_CASE("write(): succeeds writing a message with std::string_view parameter",
   auto port{waysurs::serial_port()};
 
   check(port.open({.port_name = port_tx_name}));
+
+  REQUIRE(port.is_open());
 
   constexpr std::string_view msg{"hello\r"};
 
@@ -105,6 +110,9 @@ TEST_CASE(
 
   check(port_tx.open({.port_name = port_tx_name}));
   check(port_rx.open({.port_name = port_rx_name}));
+
+  REQUIRE(port_tx.is_open());
+  REQUIRE(port_rx.is_open());
 
   constexpr std::string_view msg{"hello\r"};
 
@@ -129,6 +137,9 @@ TEST_CASE("read(buffer): succeeds with roundtrip message to virtual "
   check(port_tx.open({.port_name = port_tx_name}));
   check(port_rx.open({.port_name = port_rx_name}));
 
+  REQUIRE(port_tx.is_open());
+  REQUIRE(port_rx.is_open());
+
   constexpr std::string_view msg{"hello\r"};
 
   const auto bytes_written{port_tx.write(msg)};
@@ -138,7 +149,7 @@ TEST_CASE("read(buffer): succeeds with roundtrip message to virtual "
   std::array<std::byte, 16> buffer{};
   const auto bytes_read{port_rx.read(buffer)};
   check(bytes_read);
-  REQUIRE(to_string(buffer) == msg);
+  REQUIRE(to_string(std::span{buffer}.first(*bytes_read)) == msg);
 }
 
 TEST_CASE("read(): all config options succeed with roundtrip message to "
@@ -177,6 +188,9 @@ TEST_CASE("read(): all config options succeed with roundtrip message to "
                       .stop_bits = stop_bits,
                       .data_bits = data_bits,
                       .flow_control = flow_control}));
+
+  REQUIRE(port_tx.is_open());
+  REQUIRE(port_rx.is_open());
 
   constexpr std::string_view msg{"hello\r"};
 

@@ -13,6 +13,8 @@ auto serial_port::open(const serial_config &config)
   return p_impl->open(config);
 }
 
+auto serial_port::is_open() -> bool { return p_impl->is_open(); }
+
 auto serial_port::close() -> std::expected<void, error> {
   return p_impl->close();
 }

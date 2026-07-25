@@ -199,6 +199,8 @@ public:
     return {};
   }
 
+  [[nodiscard]] auto is_open() -> bool { return m_config.has_value(); }
+
   auto close() -> std::expected<void, error> {
     if (m_port_id >= 0) {
       return {};
