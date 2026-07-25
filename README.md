@@ -68,28 +68,27 @@ cmake --build out/build/release
 int main() {
   waysurs::serial_port port;
 
-  if (const auto port_opened = port.open(
-          waysurs::serial_config{.port_name = "/dev/ttyUSB0",
-                                 .baud_rate = 115200,
-                                 .parity = waysurs::parity::none,
-                                 .stop_bits = waysurs::stop_bits::one,
-                                 .data_bits = waysurs::data_bits::eight});
-      port_opened) {
-    if (const auto bytes_written{port.write("hello world!")};
-        bytes_written.has_value()) {
-      std::println("{} bytes written successfully", bytes_written.value());
-    } else {
-      std::println("{}", bytes_written.error());
-    }
-  } else {
-    std::println("{}", port_opened.error()); // prints system error if present
-  }
+  const auto result{
+      port.open(waysurs::serial_config{.port_name = "/dev/ttyUSB0",
+                                       .baud_rate = 115200,
+                                       .parity = waysurs::parity::none,
+                                       .stop_bits = waysurs::stop_bits::one,
+                                       .data_bits = waysurs::data_bits::eight})
+          .and_then([&port] { return port.write("hello world!"); })
+          .transform([](std::size_t bytes_written) {
+            std::println("{} bytes written successfully", bytes_written);
+          })
+          .or_else([](const waysurs::error &err)
+                       -> std::expected<void, waysurs::error> {
+            std::println("{}", err);
+            return std::unexpected(err);
+          })};
 }
 ```
 
 ### Todo
-1. custom baud rates
 1. port enumeration
+1. custom baud rates
 1. Windows
 1. fuzzing
 1. f/a sanitizer
