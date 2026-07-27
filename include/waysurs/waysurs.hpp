@@ -45,7 +45,9 @@ public:
   /// @note destructor calls close()
   /// @see close()
   ~serial_port();
+  /// @note moved-from objects may only be destroyed or assigned to
   serial_port(serial_port &&) noexcept = default;
+  /// @note moved-from objects may only be destroyed or assigned to
   serial_port &operator=(serial_port &&other) noexcept = default;
 
   /// @param other - const reference to another serial_port class
