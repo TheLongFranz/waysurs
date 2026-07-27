@@ -64,6 +64,44 @@ TEST_CASE("open(): succeeds with valid port name", "[serial]") {
   REQUIRE(port.is_open());
 }
 
+TEST_CASE("open(): open -> close -> open succeeds with the same config") {
+  const char *port_tx_name{get_env("WAYSURS_SERIAL_TX")};
+
+  auto port{waysurs::serial_port()};
+
+  check(port.open({.port_name = port_tx_name}));
+  check(port.close());
+  check(port.open({.port_name = port_tx_name}));
+
+  REQUIRE(port.is_open());
+}
+
+TEST_CASE("open(): open -> open(new config) succeeds") {
+  const char *port_tx_name{get_env("WAYSURS_SERIAL_TX")};
+  const char *port_rx_name{get_env("WAYSURS_SERIAL_RX")};
+
+  auto port{waysurs::serial_port()};
+
+  check(port.open({.port_name = port_tx_name}));
+  check(port.open({.port_name = port_rx_name}));
+
+  REQUIRE(port.is_open());
+}
+
+TEST_CASE("is_open(): succeeds when port is closed") {
+  const char *port_tx_name{get_env("WAYSURS_SERIAL_TX")};
+
+  auto port{waysurs::serial_port()};
+
+  check(port.open({.port_name = port_tx_name}));
+
+  REQUIRE(port.is_open());
+
+  REQUIRE(port.close().has_value());
+
+  REQUIRE(!(port.is_open()));
+}
+
 TEST_CASE(
     "write(): succeeds writing a message with std::span<std::byte> parameter",
     "[serial]") {
@@ -99,51 +137,17 @@ TEST_CASE("write(): succeeds writing a message with std::string_view parameter",
   REQUIRE(write_result_string_view == msg.size());
 }
 
-TEST_CASE("read(): before opening port fails with error::config") {}
-
-TEST_CASE("write(): before opening port fails with error::config") {}
-
-TEST_CASE("read -> write binary roundtrip") {}
-
-TEST_CASE("open(): open -> close -> open succeeds with the same config") {
-  const char *port_tx_name{get_env("WAYSURS_SERIAL_TX")};
-
+TEST_CASE("write(): before opening port fails with error::config") {
   auto port{waysurs::serial_port()};
-
-  check(port.open({.port_name = port_tx_name}));
-  check(port.close());
-  check(port.open({.port_name = port_tx_name}));
-
-  REQUIRE(port.is_open());
+  REQUIRE(!(port.write("This should fail\r")));
 }
 
-TEST_CASE("open(): open -> open(new config) succeeds") {
-  const char *port_tx_name{get_env("WAYSURS_SERIAL_TX")};
-  const char *port_rx_name{get_env("WAYSURS_SERIAL_RX")};
-
+TEST_CASE("read(): before opening port fails with error::config") {
   auto port{waysurs::serial_port()};
-
-  check(port.open({.port_name = port_tx_name}));
-  check(port.open({.port_name = port_rx_name}));
-
-  REQUIRE(port.is_open());
+  REQUIRE(!(port.read(32)));
 }
 
-TEST_CASE("move semantics: moved from") {}
-
-TEST_CASE("is_open(): succeeds when port is closed") {
-  const char *port_tx_name{get_env("WAYSURS_SERIAL_TX")};
-
-  auto port{waysurs::serial_port()};
-
-  check(port.open({.port_name = port_tx_name}));
-
-  REQUIRE(port.is_open());
-
-  REQUIRE(port.close().has_value());
-
-  REQUIRE(!(port.is_open()));
-}
+TEST_CASE("read() -> write() binary roundtrip 0x00 -> 0xFF") {}
 
 TEST_CASE(
     "read(buffer_size): succeeds with roundtrip message to virtual tx/rx pair",
@@ -249,6 +253,8 @@ TEST_CASE("read(): all config options succeed with roundtrip message to "
   check(bytes_read);
   REQUIRE(to_string(bytes_read.value()) == msg);
 }
+
+TEST_CASE("move semantics: moved from") {}
 
 TEST_CASE("README") {
   waysurs::serial_port port;
