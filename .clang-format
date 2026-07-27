@@ -1,5 +1,5 @@
 Language: Cpp
-BasedOnStyle: LLVM
+
 PointerAlignment: Left
 ReferenceAlignment: Left
 AccessModifierOffset: -4
@@ -22,13 +22,13 @@ BraceWrapping:
   BeforeElse: false
   BeforeLambdaBody: false
   BeforeWhile: false
-  SplitEmptyFunction: true
-  SplitEmptyRecord: true
-  SplitEmptyNamespace: true
+  SplitEmptyFunction: false
+  SplitEmptyRecord: false
+  SplitEmptyNamespace: false
 BreakBeforeBraces: Custom
 BreakConstructorInitializers: AfterColon
 BreakConstructorInitializersBeforeComma: false
-ColumnLimit: 120
+ColumnLimit: 100
 ConstructorInitializerAllOnOneLineOrOnePerLine: false
 ContinuationIndentWidth: 2
 IncludeCategories:
@@ -62,7 +62,8 @@ AlignConsecutiveShortCaseStatements:
   AcrossComments: true
   AlignCaseColons: false
 IndentCaseLabels: false
-AllowShortFunctionsOnASingleLine: All
-AllowShortLambdasOnASingleLine: All
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortLambdasOnASingleLine: Inline
 AllowAllParametersOfDeclarationOnNextLine: true
-AlignAfterOpenBracket: true
+AlignAfterOpenBracket: BlockIndent
+AlignArrayOfStructures: Left

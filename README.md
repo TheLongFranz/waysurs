@@ -2,18 +2,18 @@
 
 ## What is WAYSURS for?
 
-
-
 ### Prerequisites
 
 **MacOS**
+
 ```bash
-brew install llvm@20 ninja cmake 
+brew install llvm@20 ninja cmake
 # catch2 & socat are only required for building tests, not consuming the library
 brew install catch2 socat
 ```
 
 **Linux**
+
 ```bash
 apt install llvm-20 ninja-build cmake
 # catch2 & socat are only required for building tests, not consuming the library
@@ -21,6 +21,7 @@ apt install catch2 socat
 ```
 
 **Windows (Currently Unsupported)**
+
 ```powershell
 choco install llvm --version=20.1.8
 ```
@@ -87,6 +88,7 @@ int main() {
 ```
 
 ### Todo
+
 1. port enumeration
 1. custom baud rates
 1. Windows

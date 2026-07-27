@@ -170,9 +170,11 @@ TEST_CASE("read(buffer_size): succeeds with roundtrip message to virtual tx/rx p
   REQUIRE(to_string(bytes_read.value()) == msg);
 }
 
-TEST_CASE("read(buffer): succeeds with roundtrip message to virtual "
-          "tx/rx pair",
-          "[serial]") {
+TEST_CASE(
+  "read(buffer): succeeds with roundtrip message to virtual "
+  "tx/rx pair",
+  "[serial]"
+) {
   const char* port_tx_name{get_env("WAYSURS_SERIAL_TX")};
   const char* port_rx_name{get_env("WAYSURS_SERIAL_RX")};
 
@@ -198,9 +200,11 @@ TEST_CASE("read(buffer): succeeds with roundtrip message to virtual "
   REQUIRE(to_string(buffer) == msg);
 }
 
-TEST_CASE("read(): all config options succeed with roundtrip message to "
-          "virtual tx/rx pair",
-          "[serial]") {
+TEST_CASE(
+  "read(): all config options succeed with roundtrip message to "
+  "virtual tx/rx pair",
+  "[serial]"
+) {
   const char* port_tx_name{get_env("WAYSURS_SERIAL_TX")};
   const char* port_rx_name{get_env("WAYSURS_SERIAL_RX")};
 
@@ -209,11 +213,15 @@ TEST_CASE("read(): all config options succeed with roundtrip message to "
 
   const auto baud_rates = GENERATE(as<std::uint32_t>{}, 50, 9600, 57600, 230400);
 
-  const auto parities = GENERATE(waysurs::parity::even, waysurs::parity::odd, waysurs::parity::none);
-  const auto data_bits =
-    GENERATE(waysurs::data_bits::five, waysurs::data_bits::six, waysurs::data_bits::seven, waysurs::data_bits::eight);
-  const auto flow_control =
-    GENERATE(waysurs::flow_control::none, waysurs::flow_control::hardware, waysurs::flow_control::software);
+  const auto parities =
+    GENERATE(waysurs::parity::even, waysurs::parity::odd, waysurs::parity::none);
+  const auto data_bits = GENERATE(
+    waysurs::data_bits::five, waysurs::data_bits::six, waysurs::data_bits::seven,
+    waysurs::data_bits::eight
+  );
+  const auto flow_control = GENERATE(
+    waysurs::flow_control::none, waysurs::flow_control::hardware, waysurs::flow_control::software
+  );
   const auto stop_bits = GENERATE(waysurs::stop_bits::one, waysurs::stop_bits::two);
 
   check(port_tx.open({
@@ -282,17 +290,22 @@ TEST_CASE("README") {
 
   const auto result{
     port
-      .open(waysurs::serial_config{
-        .port_name = "/dev/ttyUSB0",
-        .baud_rate = 115200,
-        .parity    = waysurs::parity::none,
-        .stop_bits = waysurs::stop_bits::one,
-        .data_bits = waysurs::data_bits::eight,
-      })
+      .open(
+        waysurs::serial_config{
+          .port_name = "/dev/ttyUSB0",
+          .baud_rate = 115200,
+          .parity    = waysurs::parity::none,
+          .stop_bits = waysurs::stop_bits::one,
+          .data_bits = waysurs::data_bits::eight
+        }
+      )
       .and_then([&port] { return port.write("hello world!"); })
-      .transform([](std::size_t bytes_written) { std::println("{} bytes written successfully", bytes_written); })
+      .transform([](std::size_t bytes_written) {
+        std::println("{} bytes written successfully", bytes_written);
+      })
       .or_else([](const waysurs::error& err) -> std::expected<void, waysurs::error> {
         std::println("{}", err);
         return std::unexpected(err);
-      })};
+      })
+  };
 }
