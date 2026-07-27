@@ -109,7 +109,21 @@ TEST_CASE("open(): open -> close -> open succeeds with the same config") {}
 
 TEST_CASE("open(): open -> open(new config) succeeds") {}
 
-TEST_CASE("move semantics: moved from ") {}
+TEST_CASE("move semantics: moved from") {}
+
+TEST_CASE("is_open(): succeeds when port is closed") {
+  const char *port_tx_name{get_env("WAYSURS_SERIAL_TX")};
+
+  auto port{waysurs::serial_port()};
+
+  check(port.open({.port_name = port_tx_name}));
+
+  REQUIRE(port.is_open());
+
+  REQUIRE(port.close().has_value());
+
+  REQUIRE(!(port.is_open()));
+}
 
 TEST_CASE(
     "read(buffer_size): succeeds with roundtrip message to virtual tx/rx pair",
