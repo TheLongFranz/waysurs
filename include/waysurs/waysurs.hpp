@@ -22,14 +22,14 @@ struct serial_config {
   /// @param baud_rate - std::uint32_t validated and mapped to Standard OS Baud
   /// Rates
   /// 50, 300, 600, 1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200, 230400
+  /// POSIX Only 75, 110, 134, 150, 200, 1800
   /// Custom baud rates not yet implemented.
   std::uint32_t baud_rate{9600};
   parity parity{parity::none};
   stop_bits stop_bits{stop_bits::one};
   data_bits data_bits{data_bits::eight};
   flow_control flow_control{flow_control::none};
-  std::uint8_t min_bytes{8}; ///< Number of bytes allowed in the buffer before
-                             ///< read() blocks and returns
+  std::uint8_t min_bytes{8}; ///< Minimum bytes before a blocking read returns.
   std::chrono::milliseconds inter_byte_timeout{
       100}; ///< Timeout between reading bytes
 

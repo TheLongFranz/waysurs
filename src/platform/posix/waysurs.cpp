@@ -5,7 +5,6 @@
 #include <cstdint>
 #include <expected>
 #include <optional>
-#include <print>
 #include <span>
 #include <string_view>
 
@@ -197,13 +196,15 @@ public:
 
     auto tty{build_termios(config)};
     if (!(tty.has_value())) {
+      const auto _{close()};
       return std::unexpected(tty.error());
     }
 
     if (tcsetattr(m_port_id, TCSANOW, &tty.value()) != 0) {
+      const auto result =
+          make_error(error_type::config, "OS Error setting port attributes\n");
       const auto _{close()};
-      return std::unexpected(
-          make_error(error_type::config, "OS Error setting port attributes\n"));
+      return std::unexpected(result);
     }
     m_config = config;
     return {};
@@ -212,7 +213,7 @@ public:
   [[nodiscard]] auto is_open() -> bool { return m_config.has_value(); }
 
   auto close() -> std::expected<void, error> {
-    if (m_port_id >= 0) {
+    if (m_port_id < 0) {
       return {};
     }
 
