@@ -105,7 +105,17 @@ TEST_CASE("write(): before opening port fails with error::config") {}
 
 TEST_CASE("read -> write binary roundtrip") {}
 
-TEST_CASE("open(): open -> close -> open succeeds with the same config") {}
+TEST_CASE("open(): open -> close -> open succeeds with the same config") {
+  const char *port_tx_name{get_env("WAYSURS_SERIAL_TX")};
+
+  auto port{waysurs::serial_port()};
+
+  check(port.open({.port_name = port_tx_name}));
+  check(port.close());
+  check(port.open({.port_name = port_tx_name}));
+
+  REQUIRE(port.is_open());
+}
 
 TEST_CASE("open(): open -> open(new config) succeeds") {
   const char *port_tx_name{get_env("WAYSURS_SERIAL_TX")};
