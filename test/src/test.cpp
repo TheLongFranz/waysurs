@@ -107,7 +107,17 @@ TEST_CASE("read -> write binary roundtrip") {}
 
 TEST_CASE("open(): open -> close -> open succeeds with the same config") {}
 
-TEST_CASE("open(): open -> open(new config) succeeds") {}
+TEST_CASE("open(): open -> open(new config) succeeds") {
+  const char *port_tx_name{get_env("WAYSURS_SERIAL_TX")};
+  const char *port_rx_name{get_env("WAYSURS_SERIAL_RX")};
+
+  auto port{waysurs::serial_port()};
+
+  check(port.open({.port_name = port_tx_name}));
+  check(port.open({.port_name = port_rx_name}));
+
+  REQUIRE(port.is_open());
+}
 
 TEST_CASE("move semantics: moved from") {}
 
