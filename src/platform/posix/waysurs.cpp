@@ -170,9 +170,10 @@ private:
 
 public:
   ~impl() { const auto _{close()}; }
+
   [[nodiscard]] auto open(const serial_config &config)
       -> std::expected<void, error> {
-    if (m_config.has_value()) {
+    if (is_open()) {
       if (m_config.value() == config) {
         return {};
       }
@@ -228,7 +229,7 @@ public:
 
   [[nodiscard]] auto read(std::size_t buffer_size)
       -> std::expected<std::vector<std::byte>, error> {
-    if (m_config.has_value()) {
+    if (is_open()) {
       std::vector<std::byte> read_buf(buffer_size);
       const auto bytes_read =
           ::read(m_port_id, read_buf.data(), read_buf.size());
@@ -260,7 +261,7 @@ public:
 
   [[nodiscard]] auto write(std::span<const std::byte> buffer)
       -> std::expected<std::size_t, error> {
-    if (m_config.has_value()) {
+    if (is_open()) {
       if (const auto result = ::write(m_port_id, buffer.data(), buffer.size());
           result >= 0) {
         return static_cast<std::size_t>(result);
@@ -281,7 +282,6 @@ private:
   int m_port_id{-1};
   std::optional<serial_config> m_config{std::nullopt};
 };
-
 } // namespace waysurs
 
 #include "../../common/serial_port.ipp"

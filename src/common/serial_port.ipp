@@ -7,6 +7,8 @@ namespace waysurs {
 
 serial_port::serial_port() : p_impl(std::make_unique<impl>()) {}
 serial_port::~serial_port() = default;
+serial_port::serial_port(serial_port &&) noexcept = default;
+serial_port &serial_port::operator=(serial_port &&) noexcept = default;
 
 auto serial_port::open(const serial_config &config)
     -> std::expected<void, error> {

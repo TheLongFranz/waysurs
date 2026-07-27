@@ -46,9 +46,9 @@ public:
   /// @see close()
   ~serial_port();
   /// @note moved-from objects may only be destroyed or assigned to
-  serial_port(serial_port &&) noexcept = default;
+  serial_port(serial_port &&) noexcept;
   /// @note moved-from objects may only be destroyed or assigned to
-  serial_port &operator=(serial_port &&other) noexcept = default;
+  serial_port &operator=(serial_port &&) noexcept;
 
   /// @param other - const reference to another serial_port class
   /// @note copy-constructor deleted as only one handle to a hardware

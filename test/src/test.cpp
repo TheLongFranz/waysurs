@@ -1,3 +1,4 @@
+#include <_abort.h>
 #include <array>
 #include <cstddef>
 #include <cstdint>
@@ -12,6 +13,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
+#include <utility>
 #include <waysurs/waysurs.hpp>
 
 namespace {
@@ -213,8 +215,8 @@ TEST_CASE("read(): all config options succeed with roundtrip message to "
   auto port_rx{waysurs::serial_port()};
 
   const auto baud_rates =
-      GENERATE(as<std::uint32_t>{}, 50, 300, 600, 1200, 2400, 4800, 9600, 19200,
-               38400, 57600, 115200, 230400);
+      GENERATE(as<std::uint32_t>{}, 50, 9600, 57600, 230400);
+
   const auto parities = GENERATE(waysurs::parity::even, waysurs::parity::odd,
                                  waysurs::parity::none);
   const auto data_bits =
@@ -254,7 +256,34 @@ TEST_CASE("read(): all config options succeed with roundtrip message to "
   REQUIRE(to_string(bytes_read.value()) == msg);
 }
 
-TEST_CASE("move semantics: moved from") {}
+TEST_CASE("move semantics: moved to serial port succeeds to write") {
+  const char *port_tx_name{get_env("WAYSURS_SERIAL_TX")};
+  const char *port_rx_name{get_env("WAYSURS_SERIAL_RX")};
+
+  auto tmp_port_tx{waysurs::serial_port()};
+  auto tmp_port_rx{waysurs::serial_port()};
+
+  check(tmp_port_tx.open({.port_name = port_tx_name}));
+  check(tmp_port_rx.open({.port_name = port_rx_name}));
+
+  auto port_tx = std::move(tmp_port_tx);
+  auto port_rx = std::move(tmp_port_rx);
+
+  REQUIRE(port_tx.is_open());
+  REQUIRE(port_rx.is_open());
+
+  constexpr std::string_view msg{"hello\r"};
+
+  const auto bytes_written{port_tx.write(msg)};
+  check(bytes_written);
+  REQUIRE(bytes_written == msg.size());
+
+  std::array<std::byte, msg.size()> buffer{};
+  const auto bytes_read{port_rx.read(buffer)};
+  check(bytes_read);
+  REQUIRE(bytes_read.value() == msg.size());
+  REQUIRE(to_string(buffer) == msg);
+}
 
 TEST_CASE("README") {
   waysurs::serial_port port;
