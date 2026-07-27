@@ -54,13 +54,11 @@ private:
       return B115200;
     case 230400:
       return B230400;
-    default:
-      return std::unexpected(make_error(
-          error_type::baud_rate,
-          std::format(
-              "Baud rate '{}' is not standard and could not be applied\n",
-              rate)));
     }
+    return std::unexpected(make_error(
+        error_type::baud_rate,
+        std::format("Baud rate '{}' is not standard and could not be applied\n",
+                    rate)));
   }
 
   [[nodiscard]] static auto apply_baud_rate(termios &tty, std::uint32_t rate)
