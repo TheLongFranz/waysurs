@@ -132,7 +132,7 @@ TEST_CASE(
   check(bytes_written);
   REQUIRE(bytes_written == msg.size());
 
-  const auto bytes_read{port_rx.read(6)};
+  const auto bytes_read{port_rx.read(msg.size())};
   check(bytes_read);
   REQUIRE(to_string(bytes_read.value()) == msg);
 }
@@ -156,13 +156,13 @@ TEST_CASE("read(buffer): succeeds with roundtrip message to virtual "
 
   const auto bytes_written{port_tx.write(msg)};
   check(bytes_written);
-  REQUIRE(bytes_written.value() == msg.size());
+  REQUIRE(bytes_written == msg.size());
 
-  std::array<std::byte, 16> buffer{};
+  std::array<std::byte, msg.size()> buffer{};
   const auto bytes_read{port_rx.read(buffer)};
   check(bytes_read);
-  REQUIRE(bytes_read.value() == 6);
-  REQUIRE(to_string(std::span{buffer}.first(bytes_read.value())) == msg);
+  REQUIRE(bytes_read.value() == msg.size());
+  REQUIRE(to_string(buffer) == msg);
 }
 
 TEST_CASE("read(): all config options succeed with roundtrip message to "

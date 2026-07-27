@@ -247,13 +247,11 @@ public:
   [[nodiscard]] auto read(std::span<std::byte> buffer)
       -> std::expected<std::size_t, error> {
     if (m_config.has_value()) {
-      // std::vector<std::byte> read_buf(buffer_size);
       const auto bytes_read = ::read(m_port_id, buffer.data(), buffer.size());
       if (bytes_read < 0) {
         return std::unexpected(
             make_error(error_type::read, "Error reading buffer\n"));
       }
-
       return bytes_read;
     }
     return std::unexpected(

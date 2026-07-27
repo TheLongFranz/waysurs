@@ -29,9 +29,9 @@ struct serial_config {
   stop_bits stop_bits{stop_bits::one};
   data_bits data_bits{data_bits::eight};
   flow_control flow_control{flow_control::none};
-  std::uint8_t min_bytes{8}; ///< Minimum bytes before a blocking read returns.
+  std::uint8_t min_bytes{1}; ///< Minimum bytes before a blocking read returns.
   std::chrono::milliseconds inter_byte_timeout{
-      100}; ///< Timeout between reading bytes
+      1}; ///< Timeout between reading bytes
 
   bool operator==(const serial_config &) const = default;
 };
@@ -83,7 +83,8 @@ public:
   [[nodiscard]] auto read(std::size_t buffer_size)
       -> std::expected<std::vector<std::byte>, error>;
 
-  /// @param buffer - The buffer provided by the caller
+  /// @param buffer - The buffer provided by the caller. read() expects the
+  /// buffer to be a static size i.e. std::array<std::byte, 16> buffer{};
   /// @returns - number of bytes successfully written on success, error on
   /// failure
   [[nodiscard]] auto read(std::span<std::byte> buffer)
