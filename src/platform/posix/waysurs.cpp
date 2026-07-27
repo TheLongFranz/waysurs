@@ -83,11 +83,10 @@ private:
     return std::unexpected(tmp_rate.error());
   }
 
-  [[nodiscard]] static auto
-  ms_to_vtime(const std::chrono::milliseconds &ms) noexcept -> std::uint8_t {
-    using deciseconds = std::chrono::duration<std::uint8_t, std::deci>;
-    return std::clamp(
-        static_cast<int>(std::chrono::floor<deciseconds>(ms).count()), 0, 255);
+  [[nodiscard]] static auto ms_to_vtime(std::chrono::milliseconds ms) noexcept
+      -> std::uint8_t {
+    using deciseconds = std::chrono::duration<int, std::deci>;
+    return std::clamp(std::chrono::ceil<deciseconds>(ms).count(), 0, 255);
   }
 
   [[nodiscard]] static auto build_termios(const serial_config &config) noexcept
