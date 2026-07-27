@@ -17,40 +17,38 @@
 #include <waysurs/waysurs.hpp>
 
 namespace {
-auto check(const auto &var) -> void {
-  if (!(var.has_value())) {
-    INFO(std::format("{}", var.error()));
+  auto check(const auto& var) -> void {
+    if (!(var.has_value())) {
+      INFO(std::format("{}", var.error()));
+    }
+    REQUIRE(var.has_value());
   }
-  REQUIRE(var.has_value());
-}
 
-auto get_env(const char *env) -> const char * {
-  const char *result = std::getenv(env);
-  if (result == nullptr) {
-    INFO(std::format("Environment variable {} does not exist", env));
+  auto get_env(const char* env) -> const char* {
+    const char* result = std::getenv(env);
+    if (result == nullptr) {
+      INFO(std::format("Environment variable {} does not exist", env));
+    }
+    REQUIRE(result != nullptr);
+    return result;
   }
-  REQUIRE(result != nullptr);
-  return result;
-}
 
-auto to_string(const auto &vec) -> std::string {
-  return std::string(reinterpret_cast<const char *>(vec.data()), vec.size());
-}
+  auto to_string(const auto& vec) -> std::string {
+    return std::string(reinterpret_cast<const char*>(vec.data()), vec.size());
+  }
 } // namespace
 
 TEST_CASE("open(): fails with non-standard baud rates", "[serial]") {
-  const char *port_tx_name(get_env("WAYSURS_SERIAL_TX"));
-  auto port{waysurs::serial_port()};
+  const char* port_tx_name(get_env("WAYSURS_SERIAL_TX"));
+  auto        port{waysurs::serial_port()};
 
-  const auto baud_rates =
-      GENERATE(as<std::uint32_t>{}, 0, 42, 451, 123'456'789);
+  const auto baud_rates = GENERATE(as<std::uint32_t>{}, 0, 42, 451, 123'456'789);
   REQUIRE(!(port.open({.port_name = port_tx_name, .baud_rate = baud_rates})));
 }
 
 TEST_CASE("open(): fails with invalid port name", "[serial]") {
   auto port{waysurs::serial_port()};
-  REQUIRE(!(port.open(waysurs::serial_config{.port_name = "bob/hoskins"}))
-               .has_value());
+  REQUIRE(!(port.open(waysurs::serial_config{.port_name = "bob/hoskins"})).has_value());
 }
 
 TEST_CASE("open(): fails with empty port name", "[serial]") {
@@ -60,14 +58,14 @@ TEST_CASE("open(): fails with empty port name", "[serial]") {
 }
 
 TEST_CASE("open(): succeeds with valid port name", "[serial]") {
-  const char *port_tx_name(get_env("WAYSURS_SERIAL_TX"));
-  auto port{waysurs::serial_port()};
+  const char* port_tx_name(get_env("WAYSURS_SERIAL_TX"));
+  auto        port{waysurs::serial_port()};
   check(port.open({.port_name = port_tx_name}));
   REQUIRE(port.is_open());
 }
 
 TEST_CASE("open(): open -> close -> open succeeds with the same config") {
-  const char *port_tx_name{get_env("WAYSURS_SERIAL_TX")};
+  const char* port_tx_name{get_env("WAYSURS_SERIAL_TX")};
 
   auto port{waysurs::serial_port()};
 
@@ -79,8 +77,8 @@ TEST_CASE("open(): open -> close -> open succeeds with the same config") {
 }
 
 TEST_CASE("open(): open -> open(new config) succeeds") {
-  const char *port_tx_name{get_env("WAYSURS_SERIAL_TX")};
-  const char *port_rx_name{get_env("WAYSURS_SERIAL_RX")};
+  const char* port_tx_name{get_env("WAYSURS_SERIAL_TX")};
+  const char* port_rx_name{get_env("WAYSURS_SERIAL_RX")};
 
   auto port{waysurs::serial_port()};
 
@@ -91,7 +89,7 @@ TEST_CASE("open(): open -> open(new config) succeeds") {
 }
 
 TEST_CASE("is_open(): succeeds when port is closed") {
-  const char *port_tx_name{get_env("WAYSURS_SERIAL_TX")};
+  const char* port_tx_name{get_env("WAYSURS_SERIAL_TX")};
 
   auto port{waysurs::serial_port()};
 
@@ -104,10 +102,8 @@ TEST_CASE("is_open(): succeeds when port is closed") {
   REQUIRE(!(port.is_open()));
 }
 
-TEST_CASE(
-    "write(): succeeds writing a message with std::span<std::byte> parameter",
-    "[serial]") {
-  const char *port_tx_name{get_env("WAYSURS_SERIAL_TX")};
+TEST_CASE("write(): succeeds writing a message with std::span<std::byte> parameter", "[serial]") {
+  const char* port_tx_name{get_env("WAYSURS_SERIAL_TX")};
 
   auto port{waysurs::serial_port()};
 
@@ -122,9 +118,8 @@ TEST_CASE(
   REQUIRE(write_result_byte_span == msg.size());
 }
 
-TEST_CASE("write(): succeeds writing a message with std::string_view parameter",
-          "[serial]") {
-  const char *port_tx_name{get_env("WAYSURS_SERIAL_TX")};
+TEST_CASE("write(): succeeds writing a message with std::string_view parameter", "[serial]") {
+  const char* port_tx_name{get_env("WAYSURS_SERIAL_TX")};
 
   auto port{waysurs::serial_port()};
 
@@ -151,11 +146,9 @@ TEST_CASE("read(): before opening port fails with error::config") {
 
 TEST_CASE("read() -> write() binary roundtrip 0x00 -> 0xFF") {}
 
-TEST_CASE(
-    "read(buffer_size): succeeds with roundtrip message to virtual tx/rx pair",
-    "[serial]") {
-  const char *port_tx_name{get_env("WAYSURS_SERIAL_TX")};
-  const char *port_rx_name{get_env("WAYSURS_SERIAL_RX")};
+TEST_CASE("read(buffer_size): succeeds with roundtrip message to virtual tx/rx pair", "[serial]") {
+  const char* port_tx_name{get_env("WAYSURS_SERIAL_TX")};
+  const char* port_rx_name{get_env("WAYSURS_SERIAL_RX")};
 
   auto port_tx{waysurs::serial_port()};
   auto port_rx{waysurs::serial_port()};
@@ -180,8 +173,8 @@ TEST_CASE(
 TEST_CASE("read(buffer): succeeds with roundtrip message to virtual "
           "tx/rx pair",
           "[serial]") {
-  const char *port_tx_name{get_env("WAYSURS_SERIAL_TX")};
-  const char *port_rx_name{get_env("WAYSURS_SERIAL_RX")};
+  const char* port_tx_name{get_env("WAYSURS_SERIAL_TX")};
+  const char* port_rx_name{get_env("WAYSURS_SERIAL_RX")};
 
   auto port_tx{waysurs::serial_port()};
   auto port_rx{waysurs::serial_port()};
@@ -199,7 +192,7 @@ TEST_CASE("read(buffer): succeeds with roundtrip message to virtual "
   REQUIRE(bytes_written == msg.size());
 
   std::array<std::byte, msg.size()> buffer{};
-  const auto bytes_read{port_rx.read(buffer)};
+  const auto                        bytes_read{port_rx.read(buffer)};
   check(bytes_read);
   REQUIRE(bytes_read.value() == msg.size());
   REQUIRE(to_string(buffer) == msg);
@@ -208,39 +201,38 @@ TEST_CASE("read(buffer): succeeds with roundtrip message to virtual "
 TEST_CASE("read(): all config options succeed with roundtrip message to "
           "virtual tx/rx pair",
           "[serial]") {
-  const char *port_tx_name{get_env("WAYSURS_SERIAL_TX")};
-  const char *port_rx_name{get_env("WAYSURS_SERIAL_RX")};
+  const char* port_tx_name{get_env("WAYSURS_SERIAL_TX")};
+  const char* port_rx_name{get_env("WAYSURS_SERIAL_RX")};
 
   auto port_tx{waysurs::serial_port()};
   auto port_rx{waysurs::serial_port()};
 
-  const auto baud_rates =
-      GENERATE(as<std::uint32_t>{}, 50, 9600, 57600, 230400);
+  const auto baud_rates = GENERATE(as<std::uint32_t>{}, 50, 9600, 57600, 230400);
 
-  const auto parities = GENERATE(waysurs::parity::even, waysurs::parity::odd,
-                                 waysurs::parity::none);
+  const auto parities = GENERATE(waysurs::parity::even, waysurs::parity::odd, waysurs::parity::none);
   const auto data_bits =
-      GENERATE(waysurs::data_bits::five, waysurs::data_bits::six,
-               waysurs::data_bits::seven, waysurs::data_bits::eight);
+    GENERATE(waysurs::data_bits::five, waysurs::data_bits::six, waysurs::data_bits::seven, waysurs::data_bits::eight);
   const auto flow_control =
-      GENERATE(waysurs::flow_control::none, waysurs::flow_control::hardware,
-               waysurs::flow_control::software);
-  const auto stop_bits =
-      GENERATE(waysurs::stop_bits::one, waysurs::stop_bits::two);
+    GENERATE(waysurs::flow_control::none, waysurs::flow_control::hardware, waysurs::flow_control::software);
+  const auto stop_bits = GENERATE(waysurs::stop_bits::one, waysurs::stop_bits::two);
 
-  check(port_tx.open({.port_name = port_tx_name,
-                      .baud_rate = baud_rates,
-                      .parity = parities,
-                      .stop_bits = stop_bits,
-                      .data_bits = data_bits,
-                      .flow_control = flow_control}));
+  check(port_tx.open({
+    .port_name    = port_tx_name,
+    .baud_rate    = baud_rates,
+    .parity       = parities,
+    .stop_bits    = stop_bits,
+    .data_bits    = data_bits,
+    .flow_control = flow_control,
+  }));
 
-  check(port_rx.open({.port_name = port_rx_name,
-                      .baud_rate = baud_rates,
-                      .parity = parities,
-                      .stop_bits = stop_bits,
-                      .data_bits = data_bits,
-                      .flow_control = flow_control}));
+  check(port_rx.open({
+    .port_name    = port_rx_name,
+    .baud_rate    = baud_rates,
+    .parity       = parities,
+    .stop_bits    = stop_bits,
+    .data_bits    = data_bits,
+    .flow_control = flow_control,
+  }));
 
   REQUIRE(port_tx.is_open());
   REQUIRE(port_rx.is_open());
@@ -257,8 +249,8 @@ TEST_CASE("read(): all config options succeed with roundtrip message to "
 }
 
 TEST_CASE("move semantics: moved to serial port succeeds to write") {
-  const char *port_tx_name{get_env("WAYSURS_SERIAL_TX")};
-  const char *port_rx_name{get_env("WAYSURS_SERIAL_RX")};
+  const char* port_tx_name{get_env("WAYSURS_SERIAL_TX")};
+  const char* port_rx_name{get_env("WAYSURS_SERIAL_RX")};
 
   auto tmp_port_tx{waysurs::serial_port()};
   auto tmp_port_rx{waysurs::serial_port()};
@@ -279,7 +271,7 @@ TEST_CASE("move semantics: moved to serial port succeeds to write") {
   REQUIRE(bytes_written == msg.size());
 
   std::array<std::byte, msg.size()> buffer{};
-  const auto bytes_read{port_rx.read(buffer)};
+  const auto                        bytes_read{port_rx.read(buffer)};
   check(bytes_read);
   REQUIRE(bytes_read.value() == msg.size());
   REQUIRE(to_string(buffer) == msg);
@@ -289,18 +281,18 @@ TEST_CASE("README") {
   waysurs::serial_port port;
 
   const auto result{
-      port.open(waysurs::serial_config{.port_name = "/dev/ttyUSB0",
-                                       .baud_rate = 115200,
-                                       .parity = waysurs::parity::none,
-                                       .stop_bits = waysurs::stop_bits::one,
-                                       .data_bits = waysurs::data_bits::eight})
-          .and_then([&port] { return port.write("hello world!"); })
-          .transform([](std::size_t bytes_written) {
-            std::println("{} bytes written successfully", bytes_written);
-          })
-          .or_else([](const waysurs::error &err)
-                       -> std::expected<void, waysurs::error> {
-            std::println("{}", err);
-            return std::unexpected(err);
-          })};
+    port
+      .open(waysurs::serial_config{
+        .port_name = "/dev/ttyUSB0",
+        .baud_rate = 115200,
+        .parity    = waysurs::parity::none,
+        .stop_bits = waysurs::stop_bits::one,
+        .data_bits = waysurs::data_bits::eight,
+      })
+      .and_then([&port] { return port.write("hello world!"); })
+      .transform([](std::size_t bytes_written) { std::println("{} bytes written successfully", bytes_written); })
+      .or_else([](const waysurs::error& err) -> std::expected<void, waysurs::error> {
+        std::println("{}", err);
+        return std::unexpected(err);
+      })};
 }

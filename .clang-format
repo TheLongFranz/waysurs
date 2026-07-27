@@ -1,7 +1,7 @@
 Language: Cpp
 BasedOnStyle: LLVM
-PointerAlignment: left
-ReferenceAlignment: left
+PointerAlignment: Left
+ReferenceAlignment: Left
 AccessModifierOffset: -4
 AlignConsecutiveAssignments: true
 AlignConsecutiveDeclarations: true
@@ -28,7 +28,7 @@ BraceWrapping:
 BreakBeforeBraces: Custom
 BreakConstructorInitializers: AfterColon
 BreakConstructorInitializersBeforeComma: false
-ColumnLimit: 240
+ColumnLimit: 120
 ConstructorInitializerAllOnOneLineOrOnePerLine: false
 ContinuationIndentWidth: 2
 IncludeCategories:
@@ -57,16 +57,12 @@ TabWidth: 2
 AllowShortCaseLabelsOnASingleLine: true
 AllowShortCaseExpressionOnASingleLine: true
 AlignConsecutiveShortCaseStatements:
-Enabled: true
+  Enabled: true
   AcrossEmptyLines: true
   AcrossComments: true
   AlignCaseColons: false
 IndentCaseLabels: false
-AllowShortFunctionsOnASingleLine:
-  Empty: true
-  Inline: true
-  Other: true
-AllowShortLambdasOnASingleLine:
-  Empty: true
-  Inline: true
-  Other: true
+AllowShortFunctionsOnASingleLine: All
+AllowShortLambdasOnASingleLine: All
+AllowAllParametersOfDeclarationOnNextLine: true
+AlignAfterOpenBracket: true

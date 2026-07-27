@@ -16,10 +16,10 @@
 namespace fs = std::filesystem;
 
 struct SerialFixture::impl {
-  static constexpr auto poll_interval = std::chrono::milliseconds{50};
-  static constexpr auto startup_timeout = std::chrono::seconds{5};
-  static constexpr std::string_view tx_link = "/tmp/serial_tx";
-  static constexpr std::string_view rx_link = "/tmp/serial_rx";
+  static constexpr auto             poll_interval   = std::chrono::milliseconds{50};
+  static constexpr auto             startup_timeout = std::chrono::seconds{5};
+  static constexpr std::string_view tx_link         = "/tmp/serial_tx";
+  static constexpr std::string_view rx_link         = "/tmp/serial_rx";
 
   pid_t socat_pid{-1};
 
@@ -35,12 +35,10 @@ struct SerialFixture::impl {
 
     // Build argv before fork(): no allocation in the child (fork/malloc
     // safety).
-    char cmd[] = "socat";
-    std::string arg_tx =
-        std::string{"PTY,link="} + tx_path.string() + ",raw,echo=0";
-    std::string arg_rx =
-        std::string{"PTY,link="} + rx_path.string() + ",raw,echo=0";
-    std::array<char *, 4> args{cmd, arg_tx.data(), arg_rx.data(), nullptr};
+    char                 cmd[]  = "socat";
+    std::string          arg_tx = std::string{"PTY,link="} + tx_path.string() + ",raw,echo=0";
+    std::string          arg_rx = std::string{"PTY,link="} + rx_path.string() + ",raw,echo=0";
+    std::array<char*, 4> args{cmd, arg_tx.data(), arg_rx.data(), nullptr};
 
     socat_pid = fork();
     if (socat_pid == -1) {
@@ -65,9 +63,9 @@ struct SerialFixture::impl {
     }
   }
 
-private:
-  void wait_for_links(const fs::path &tx_path, const fs::path &rx_path) {
-    const auto deadline = std::chrono::steady_clock::now() + startup_timeout;
+  private:
+  void wait_for_links(const fs::path& tx_path, const fs::path& rx_path) {
+    const auto      deadline = std::chrono::steady_clock::now() + startup_timeout;
     std::error_code ec; // non-throwing exists(), matches old access() behavior
 
     while (!fs::exists(tx_path, ec) || !fs::exists(rx_path, ec)) {
@@ -76,13 +74,11 @@ private:
       int status = 0;
       if (waitpid(socat_pid, &status, WNOHANG) == socat_pid) {
         socat_pid = -1;
-        throw std::runtime_error{
-            "SerialFixture: socat exited during startup — is it installed?"};
+        throw std::runtime_error{"SerialFixture: socat exited during startup — is it installed?"};
       }
       if (std::chrono::steady_clock::now() >= deadline) {
         stop();
-        throw std::runtime_error{
-            "SerialFixture: timed out waiting for PTY links"};
+        throw std::runtime_error{"SerialFixture: timed out waiting for PTY links"};
       }
       std::this_thread::sleep_for(poll_interval);
     }
