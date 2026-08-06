@@ -212,7 +212,7 @@ public:
     }
 
     [[nodiscard]] auto read(std::span<std::byte> buffer) -> std::expected<std::size_t, error> {
-      if (m_config.has_value()) {
+      if (is_open()) {
         const auto bytes_read = ::read(m_port_id, buffer.data(), buffer.size());
         if (bytes_read < 0) {
           return std::unexpected(
