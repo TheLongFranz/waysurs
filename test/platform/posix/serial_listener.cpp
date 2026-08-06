@@ -12,7 +12,7 @@
 #include <thread>
 #include <unistd.h>
 
-#include "../../src/serial_fixture.hpp"
+#include "../../src/serial_listener.hpp"
 namespace fs = std::filesystem;
 
 struct SerialFixture::impl {
@@ -85,4 +85,4 @@ struct SerialFixture::impl {
   }
 };
 
-#include "../../src/serial_fixture.ipp"
+#include "../../src/serial_listener.ipp"
