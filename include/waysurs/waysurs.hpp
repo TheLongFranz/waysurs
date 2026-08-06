@@ -60,8 +60,8 @@ public:
     /// complete I'll replace this with delete("reason")
     serial_port& operator=(const serial_port& other) = delete;
 
-    [[nodiscard]] auto is_open() -> bool; ///< returns true if the port has been opened and there is
-                                          ///< a valid config, false otherwise
+    /// @note returns true if the port has been opened and there is a valid config, false otherwise
+    [[nodiscard]] auto is_open() -> bool;
 
     /// @param config - config struct defining port configuration
     /// @note returns a no-op success if the config hasn't changed, void on success, error on
