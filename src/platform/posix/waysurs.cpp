@@ -51,7 +51,7 @@ private:
       return std::unexpected(
         detail::make_error(
           error_type::baud_rate,
-          std::format("Baud rate '{}' is not standard and could not be applied\n", rate)
+          std::format("Baud rate '{}' is not standard and could not be applied", rate)
         )
       );
     }
@@ -153,13 +153,13 @@ public:
       if (config.port_name.empty()) {
         return std::unexpected(
           detail::make_error(
-            error_type::config, "Failed to open port: name empty or port does not exist\n"
+            error_type::config, "Failed to open port: name empty or port does not exist"
           )
         );
       }
 
       if (m_port_id = ::open(config.port_name.c_str(), O_RDWR | O_NOCTTY); m_port_id < 0) {
-        return std::unexpected(detail::make_error(error_type::open, "Error opening port\n", errno));
+        return std::unexpected(detail::make_error(error_type::open, "Error opening port", errno));
       }
 
       auto tty{build_termios(config)};
@@ -170,7 +170,7 @@ public:
 
       if (tcsetattr(m_port_id, TCSANOW, &tty.value()) != 0) {
         const auto result =
-          detail::make_error(error_type::open, "OS Error setting port attributes\n", errno);
+          detail::make_error(error_type::open, "OS Error setting port attributes", errno);
         const auto _{close()};
         return std::unexpected(result);
       }
@@ -187,9 +187,7 @@ public:
       m_port_id         = -1;
       m_config          = std::nullopt;
       if (result < 0) {
-        return std::unexpected(
-          detail::make_error(error_type::close, "Error closing port\n", errno)
-        );
+        return std::unexpected(detail::make_error(error_type::close, "Error closing port", errno));
       }
       return {};
     }
@@ -201,7 +199,7 @@ public:
         const auto             bytes_read = ::read(m_port_id, read_buf.data(), read_buf.size());
         if (bytes_read < 0) {
           return std::unexpected(
-            detail::make_error(error_type::read, "Error reading buffer\n", errno)
+            detail::make_error(error_type::read, "Error reading buffer", errno)
           );
         }
 
@@ -209,7 +207,7 @@ public:
         return read_buf;
       }
       return std::unexpected(
-        detail::make_error(error_type::config, "Port has not been configured\n")
+        detail::make_error(error_type::config, "Port has not been configured")
       );
     }
 
@@ -218,13 +216,13 @@ public:
         const auto bytes_read = ::read(m_port_id, buffer.data(), buffer.size());
         if (bytes_read < 0) {
           return std::unexpected(
-            detail::make_error(error_type::read, "Error reading buffer\n", errno)
+            detail::make_error(error_type::read, "Error reading buffer", errno)
           );
         }
         return bytes_read;
       }
       return std::unexpected(
-        detail::make_error(error_type::config, "Port has not been configured\n")
+        detail::make_error(error_type::config, "Port has not been configured")
       );
     }
 
@@ -235,11 +233,11 @@ public:
           return static_cast<std::size_t>(result);
         }
         return std::unexpected(
-          detail::make_error(error_type::write, "Error writing to buffer\n", errno)
+          detail::make_error(error_type::write, "Error writing to buffer", errno)
         );
       }
       return std::unexpected(
-        detail::make_error(error_type::config, "Port has not been configured\n")
+        detail::make_error(error_type::config, "Port has not been configured")
       );
     }
 
