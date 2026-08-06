@@ -14,13 +14,15 @@
 
 #include <waysurs/waysurs.hpp>
 #include "helpers.hpp"
+#include "ports_fixture.hpp"
 
-TEST_CASE("open(): fails with non-standard baud rates", "[serial]") {
-  const char* port_tx_name(get_env("WAYSURS_SERIAL_TX"));
-  auto        port{waysurs::serial_port()};
+TEST_CASE_METHOD(ports_fixture, "open(): fails with non-standard baud rates", "[serial]") {
+  // const char* port_tx_name(get_env("WAYSURS_SERIAL_TX"));
+  // auto        port{waysurs::serial_port()};
 
   const auto baud_rates = GENERATE(as<std::uint32_t>{}, 0, 42, 451, 123'456'789);
-  REQUIRE(!(port.open({.port_name = port_tx_name, .baud_rate = baud_rates})));
+  // REQUIRE(!(port.open({.port_name = port_tx_name, .baud_rate = baud_rates})));
+  REQUIRE(!(tx.open({.baud_rate = baud_rates})));
 }
 
 TEST_CASE("open(): fails with invalid port name", "[serial]") {
