@@ -16,8 +16,7 @@ namespace waysurs {
     read,
     write,
     out_of_range,
-    baud_rate,
-    validation
+    baud_rate
   };
 
   struct error {
