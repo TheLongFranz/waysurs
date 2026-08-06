@@ -2,6 +2,8 @@
 
 ## What is WAYSURS for?
 
+If you are unfortunate enough to find yourself needing to communicate with a device using RS232, you might as well do it using this modern little C++ library. WAYSURS is an MIT-Licensed cross-platform-ish modern **C++23** serial port library with std::expected based error handling & PIMPL per-platform backends.
+
 ### Prerequisites
 
 **MacOS**
@@ -20,7 +22,9 @@ apt install llvm-20 ninja-build cmake
 apt install catch2 socat
 ```
 
-**Windows (Currently Unsupported)**
+Windows **(Currently Unsupported)**
+
+If Windows **were** supported you would run this command
 
 ```powershell
 choco install llvm --version=20.1.8
@@ -67,7 +71,7 @@ cmake --build out/build/release
 #include <waysurs/waysurs.hpp>
 
 int main() {
-   waysurs::serial_port port;
+  waysurs::serial_port port;
 
   const auto result{
     port
@@ -90,6 +94,14 @@ int main() {
       })
   };
 }
+```
+
+### Running Tests
+
+Running tests on MacOS/Linux requires socat, which creates a linked pair of virtual serial ports for each test case. If you are building this library standalone i.e. PROJECT_IS_TOP_LEVEL then tests will always build as they are the only executable target in the library.
+
+```bash
+cmake --preset debug -B ... -DBUILD_TESTING=ON && ctest
 ```
 
 ### Todo

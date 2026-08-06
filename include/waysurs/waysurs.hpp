@@ -29,7 +29,9 @@ namespace waysurs {
     data_bits                 data_bits{data_bits::eight};
     flow_control              flow_control{flow_control::none};
     std::uint8_t              min_bytes{1}; ///< Minimum bytes before a blocking read returns.
-    std::chrono::milliseconds inter_byte_timeout{1}; ///< Timeout between reading bytes
+    std::chrono::milliseconds inter_byte_timeout{
+      1
+    }; ///< Timeout between reading bytes. Rounds up to the nearest 100ms on POSIX systems
 
     bool operator==(const serial_config&) const = default;
   };

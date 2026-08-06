@@ -317,4 +317,8 @@ TEST_CASE("README") {
         return std::unexpected(err);
       })
   };
+
+  // this test case exists purely as a compile-time check to ensure that the README example is
+  // correct
+  REQUIRE(!(result.has_value()));
 }
