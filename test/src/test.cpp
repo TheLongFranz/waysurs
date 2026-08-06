@@ -1,4 +1,3 @@
-#include <_abort.h>
 #include <array>
 #include <cstddef>
 #include <cstdint>
@@ -93,13 +92,21 @@ TEST_CASE("is_open(): succeeds when port is closed") {
 
   auto port{waysurs::serial_port()};
 
-  check(port.open({.port_name = port_tx_name}));
+  CAPTURE(port.open({.port_name = port_tx_name}));
 
   REQUIRE(port.is_open());
 
   REQUIRE(port.close().has_value());
 
   REQUIRE(!(port.is_open()));
+}
+
+TEST_CASE("close(): succeeds when port hasn't been opened", "[serial]") {
+  SKIP("implement later");
+}
+
+TEST_CASE("close(): succeeds with a previously closed port", "[serial]") {
+  SKIP("implement later");
 }
 
 TEST_CASE("write(): succeeds writing a message with std::span<std::byte> parameter", "[serial]") {
@@ -144,7 +151,9 @@ TEST_CASE("read(): before opening port fails with error::config") {
   REQUIRE(!(port.read(32)));
 }
 
-TEST_CASE("read() -> write() binary roundtrip 0x00 -> 0xFF") {}
+TEST_CASE("read() -> write() binary roundtrip 0x00 -> 0xFF") {
+  SKIP("implement later");
+}
 
 TEST_CASE("read(buffer_size): succeeds with roundtrip message to virtual tx/rx pair", "[serial]") {
   const char* port_tx_name{get_env("WAYSURS_SERIAL_TX")};
