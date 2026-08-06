@@ -43,16 +43,10 @@ TEST_CASE_METHOD(ports_fixture, "open(): open -> close -> open succeeds with the
   REQUIRE(tx.is_open());
 }
 
-TEST_CASE("open(): open -> open(new config) succeeds") {
-  const char* port_tx_name{get_env("WAYSURS_SERIAL_TX")};
-  const char* port_rx_name{get_env("WAYSURS_SERIAL_RX")};
+TEST_CASE_METHOD(ports_fixture, "open(): open -> open(new config) succeeds") {
+  check(tx.open({.port_name = get_env("WAYSURS_SERIAL_RX")}));
 
-  auto port{waysurs::serial_port()};
-
-  check(port.open({.port_name = port_tx_name}));
-  check(port.open({.port_name = port_rx_name}));
-
-  REQUIRE(port.is_open());
+  REQUIRE(tx.is_open());
 }
 
 TEST_CASE_METHOD(ports_fixture, "is_open(): succeeds when port is closed") {
