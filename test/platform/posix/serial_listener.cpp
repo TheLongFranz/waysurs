@@ -13,9 +13,10 @@
 #include <unistd.h>
 
 #include "../../src/serial_listener.hpp"
+
 namespace fs = std::filesystem;
 
-struct SerialFixture::impl {
+struct serial_listener::impl {
   static constexpr auto             poll_interval   = std::chrono::milliseconds{50};
   static constexpr auto             startup_timeout = std::chrono::seconds{5};
   static constexpr std::string_view tx_link         = "/tmp/serial_tx";

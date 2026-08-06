@@ -5,37 +5,15 @@
 #include <format>
 #include <print>
 #include <span>
-#include <string>
 #include <string_view>
+#include <utility>
 
 #include <catch2/catch_message.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
-#include <utility>
 #include <waysurs/waysurs.hpp>
-
-namespace {
-  auto check(const auto& var) -> void {
-    if (!(var.has_value())) {
-      UNSCOPED_INFO(std::format("{}", var.error()));
-    }
-    REQUIRE(var.has_value());
-  }
-
-  auto get_env(const char* env) -> const char* {
-    const char* result = std::getenv(env);
-    if (result == nullptr) {
-      INFO(std::format("Environment variable {} does not exist", env));
-    }
-    REQUIRE(result != nullptr);
-    return result;
-  }
-
-  auto to_string(const auto& vec) -> std::string {
-    return std::string(reinterpret_cast<const char*>(vec.data()), vec.size());
-  }
-} // namespace
+#include "helpers.hpp"
 
 TEST_CASE("open(): fails with non-standard baud rates", "[serial]") {
   const char* port_tx_name(get_env("WAYSURS_SERIAL_TX"));
