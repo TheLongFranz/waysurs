@@ -163,7 +163,7 @@ public:
       }
 
       if (tcsetattr(m_port_id, TCSANOW, &tty.value()) != 0) {
-        const auto result = make_error(error_type::config, "OS Error setting port attributes\n");
+        const auto result = make_error(error_type::open, "OS Error setting port attributes\n");
         const auto _{close()};
         return std::unexpected(result);
       }

@@ -18,13 +18,12 @@ namespace waysurs {
   enum class flow_control : std::uint8_t { none, software, hardware };
 
   struct serial_config {
-    std::string port_name; ///< OS device path i.e. "/dev/ttyUSB0" or "COM1"
-    /// @param baud_rate - std::uint32_t validated and mapped to Standard OS Baud
-    /// Rates
-    /// 50, 300, 600, 1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200, 230400
-    /// POSIX Only 75, 110, 134, 150, 200, 1800
-    /// Custom baud rates not yet implemented.
-    std::uint32_t             baud_rate{9600};
+    std::string   port_name; ///< OS device path i.e. "/dev/ttyUSB0" for POSIX or "COM1" for Windows
+    std::uint32_t baud_rate{9600}; ///< std::uint32_t validated and mapped to Standard OS Baud
+    ///< Rates
+    ///< 50, 300, 600, 1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200, 230400
+    ///< POSIX Only 75, 110, 134, 150, 200, 1800
+    ///< Custom baud rates not yet implemented.
     parity                    parity{parity::none};
     stop_bits                 stop_bits{stop_bits::one};
     data_bits                 data_bits{data_bits::eight};
@@ -62,8 +61,8 @@ public:
     serial_port& operator=(const serial_port& other) = delete;
 
     /// @param config - config struct defining port configuration
-    /// @note returns a no-op success if a port was never opened or if the config
-    /// hasn't changed, void on success, error on failure
+    /// @note returns a no-op success if the config hasn't changed, void on success, error on
+    /// failure
     [[nodiscard]] auto open(const serial_config& config) -> std::expected<void, error>;
 
     [[nodiscard]] auto is_open() -> bool;
