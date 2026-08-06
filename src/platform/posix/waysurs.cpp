@@ -138,6 +138,8 @@ private:
 public:
     ~impl() { const auto _{close()}; }
 
+    [[nodiscard]] auto is_open() const noexcept -> bool { return m_config.has_value(); }
+
     [[nodiscard]] auto open(const serial_config& config) -> std::expected<void, error> {
       if (is_open()) {
         if (m_config.value() == config) {
@@ -175,8 +177,6 @@ public:
       m_config = config;
       return {};
     }
-
-    [[nodiscard]] auto is_open() -> bool { return m_config.has_value(); }
 
     auto close() -> std::expected<void, error> {
       if (m_port_id < 0) {

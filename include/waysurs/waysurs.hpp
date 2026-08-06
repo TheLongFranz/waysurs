@@ -60,12 +60,12 @@ public:
     /// complete I'll replace this with delete("reason")
     serial_port& operator=(const serial_port& other) = delete;
 
+    [[nodiscard]] auto is_open() -> bool;
+
     /// @param config - config struct defining port configuration
     /// @note returns a no-op success if the config hasn't changed, void on success, error on
     /// failure
     [[nodiscard]] auto open(const serial_config& config) -> std::expected<void, error>;
-
-    [[nodiscard]] auto is_open() -> bool;
 
     /// @note returns a no-op success if a port was never opened, void on
     /// success, error on failure
