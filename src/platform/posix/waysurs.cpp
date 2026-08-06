@@ -48,10 +48,12 @@ private:
       case 115200: return B115200;
       case 230400: return B230400;
       }
-      return std::unexpected(make_error(
-        error_type::baud_rate,
-        std::format("Baud rate '{}' is not standard and could not be applied\n", rate)
-      ));
+      return std::unexpected(
+        detail::make_error(
+          error_type::baud_rate,
+          std::format("Baud rate '{}' is not standard and could not be applied\n", rate)
+        )
+      );
     }
 
     [[nodiscard]] static auto apply_baud_rate(termios& tty, std::uint32_t rate)
@@ -148,12 +150,14 @@ public:
 
       if (config.port_name.empty()) {
         return std::unexpected(
-          make_error(error_type::config, "Failed to open port: name empty or port does not exist\n")
+          detail::make_error(
+            error_type::config, "Failed to open port: name empty or port does not exist\n"
+          )
         );
       }
 
       if (m_port_id = ::open(config.port_name.c_str(), O_RDWR | O_NOCTTY); m_port_id < 0) {
-        return std::unexpected(make_error(error_type::open, "Error opening port\n"));
+        return std::unexpected(detail::make_error(error_type::open, "Error opening port\n", errno));
       }
 
       auto tty{build_termios(config)};
@@ -163,7 +167,8 @@ public:
       }
 
       if (tcsetattr(m_port_id, TCSANOW, &tty.value()) != 0) {
-        const auto result = make_error(error_type::open, "OS Error setting port attributes\n");
+        const auto result =
+          detail::make_error(error_type::open, "OS Error setting port attributes\n", errno);
         const auto _{close()};
         return std::unexpected(result);
       }
@@ -182,7 +187,9 @@ public:
       m_port_id         = -1;
       m_config          = std::nullopt;
       if (result < 0) {
-        return std::unexpected(make_error(error_type::close, "Error closing port\n"));
+        return std::unexpected(
+          detail::make_error(error_type::close, "Error closing port\n", errno)
+        );
       }
       return {};
     }
@@ -193,24 +200,32 @@ public:
         std::vector<std::byte> read_buf(buffer_size);
         const auto             bytes_read = ::read(m_port_id, read_buf.data(), read_buf.size());
         if (bytes_read < 0) {
-          return std::unexpected(make_error(error_type::read, "Error reading buffer\n"));
+          return std::unexpected(
+            detail::make_error(error_type::read, "Error reading buffer\n", errno)
+          );
         }
 
         read_buf.resize(bytes_read);
         return read_buf;
       }
-      return std::unexpected(make_error(error_type::config, "Port has not been configured\n"));
+      return std::unexpected(
+        detail::make_error(error_type::config, "Port has not been configured\n")
+      );
     }
 
     [[nodiscard]] auto read(std::span<std::byte> buffer) -> std::expected<std::size_t, error> {
       if (m_config.has_value()) {
         const auto bytes_read = ::read(m_port_id, buffer.data(), buffer.size());
         if (bytes_read < 0) {
-          return std::unexpected(make_error(error_type::read, "Error reading buffer\n"));
+          return std::unexpected(
+            detail::make_error(error_type::read, "Error reading buffer\n", errno)
+          );
         }
         return bytes_read;
       }
-      return std::unexpected(make_error(error_type::config, "Port has not been configured\n"));
+      return std::unexpected(
+        detail::make_error(error_type::config, "Port has not been configured\n")
+      );
     }
 
     [[nodiscard]] auto write(std::span<const std::byte> buffer)
@@ -219,9 +234,13 @@ public:
         if (const auto result = ::write(m_port_id, buffer.data(), buffer.size()); result >= 0) {
           return static_cast<std::size_t>(result);
         }
-        return std::unexpected(make_error(error_type::write, "Error writing to buffer\n"));
+        return std::unexpected(
+          detail::make_error(error_type::write, "Error writing to buffer\n", errno)
+        );
       }
-      return std::unexpected(make_error(error_type::config, "Port has not been configured\n"));
+      return std::unexpected(
+        detail::make_error(error_type::config, "Port has not been configured\n")
+      );
     }
 
     [[nodiscard]] auto write(const std::string_view buffer) -> std::expected<std::size_t, error> {
