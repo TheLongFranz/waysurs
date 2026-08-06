@@ -1,9 +1,6 @@
 # MacOS
 .DS_Store
 
-# Vscode
-.vscode/
-
 # CLion
 .idea/
 
