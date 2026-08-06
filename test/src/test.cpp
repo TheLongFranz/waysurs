@@ -18,7 +18,7 @@
 namespace {
   auto check(const auto& var) -> void {
     if (!(var.has_value())) {
-      INFO(std::format("{}", var.error()));
+      UNSCOPED_INFO(std::format("{}", var.error()));
     }
     REQUIRE(var.has_value());
   }

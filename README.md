@@ -67,23 +67,28 @@ cmake --build out/build/release
 #include <waysurs/waysurs.hpp>
 
 int main() {
-  waysurs::serial_port port;
+   waysurs::serial_port port;
 
   const auto result{
-      port.open(waysurs::serial_config{.port_name = "/dev/ttyUSB0",
-                                       .baud_rate = 115200,
-                                       .parity = waysurs::parity::none,
-                                       .stop_bits = waysurs::stop_bits::one,
-                                       .data_bits = waysurs::data_bits::eight})
-          .and_then([&port] { return port.write("hello world!"); })
-          .transform([](std::size_t bytes_written) {
-            std::println("{} bytes written successfully", bytes_written);
-          })
-          .or_else([](const waysurs::error &err)
-                       -> std::expected<void, waysurs::error> {
-            std::println("{}", err);
-            return std::unexpected(err);
-          })};
+    port
+      .open(
+        waysurs::serial_config{
+          .port_name = "/dev/ttyUSB0",
+          .baud_rate = 115200,
+          .parity    = waysurs::parity::none,
+          .stop_bits = waysurs::stop_bits::one,
+          .data_bits = waysurs::data_bits::eight
+        }
+      )
+      .and_then([&port] { return port.write("hello world!"); })
+      .transform([](std::size_t bytes_written) {
+        std::println("{} bytes written successfully", bytes_written);
+      })
+      .or_else([](const waysurs::error& err) -> std::expected<void, waysurs::error> {
+        std::println("{}", err);
+        return std::unexpected(err);
+      })
+  };
 }
 ```
 
