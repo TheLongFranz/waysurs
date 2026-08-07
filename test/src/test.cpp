@@ -222,7 +222,7 @@ TEST_CASE("README") {
     port
       .open(
         waysurs::serial_config{
-          .port_name = "/dev/ttyUSB0",
+          .port_name = "PORT NAME",
           .baud_rate = 115200,
           .parity    = waysurs::parity::none,
           .stop_bits = waysurs::stop_bits::one,

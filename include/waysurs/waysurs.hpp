@@ -63,7 +63,7 @@ public:
     serial_port& operator=(const serial_port& other) = delete;
 
     /// @note returns true if the port has been opened and there is a valid config, false otherwise
-    [[nodiscard]] auto is_open() -> bool;
+    [[nodiscard]] auto is_open() const noexcept -> bool;
 
     /// @param config - config struct defining port configuration
     /// @note returns a no-op success if the config hasn't changed, void on success, error on
