@@ -100,10 +100,6 @@ cmake --build out/build/release
 
 Running tests on MacOS/Linux requires socat, which creates a linked pair of virtual serial ports for each test case. If you are building this library standalone i.e. PROJECT_IS_TOP_LEVEL then tests will always build as they are the only executable target in the library.
 
-```bash
-cmake --preset debug -B ... -DBUILD_TESTING=ON && ctest
-```
-
 ## Todo
 
 1. port enumeration
