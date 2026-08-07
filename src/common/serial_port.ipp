@@ -10,12 +10,12 @@ namespace waysurs {
   serial_port::serial_port(serial_port&&) noexcept            = default;
   serial_port& serial_port::operator=(serial_port&&) noexcept = default;
 
+  auto serial_port::is_open() const noexcept -> bool {
+    return p_impl->is_open();
+  }
+  
   auto serial_port::open(const serial_config& config) -> std::expected<void, error> {
     return p_impl->open(config);
-  }
-
-  auto serial_port::is_open() -> bool {
-    return p_impl->is_open();
   }
 
   auto serial_port::close() -> std::expected<void, error> {
