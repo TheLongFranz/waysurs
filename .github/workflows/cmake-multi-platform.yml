@@ -54,6 +54,8 @@ jobs:
             c_compiler: gcc-15
           - os: windows-latest
             c_compiler: clang-20
+          - os: windows-latest
+            c_compiler: clang
           - os: macos-latest
             c_compiler: gcc-15
           - os: macos-latest
@@ -64,6 +66,8 @@ jobs:
             c_compiler: cl
           - os: ubuntu-latest
             c_compiler: cl
+          - os: ubuntu-latest
+            c_compiler: clang
 
     steps:
       - uses: actions/checkout@v4
@@ -72,9 +76,17 @@ jobs:
         if: runner.os == 'Linux'
         run: sudo apt-get update
 
+      - name: Install Brew (macOS)
+        if: runner.os == 'macOS' && matrix.c_compiler == 'clang-20'
+        run: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
       - name: Install LLVM 20 (macOS)
         if: runner.os == 'macOS' && matrix.c_compiler == 'clang-20'
-        run: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" | brew install llvm@20 Catch2 scocat
+        run: brew install llvm@20
+
+      - name: Install macOS test requirements
+        if: runner.os == 'macOS'
+        run: brew install catch2 socat
 
       - name: Install LLVM 20 (Linux)
         if: runner.os == 'Linux'
