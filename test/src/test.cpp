@@ -164,21 +164,21 @@ TEST_CASE_METHOD(
   const auto stop_bits = GENERATE(waysurs::stop_bits::one, waysurs::stop_bits::two);
 
   check(tx.open({
-    .port_name    = get_env("WAYSURS_SERIAL_TX"),
-    .baud_rate    = baud_rates,
-    .parity       = parities,
-    .stop_bits    = stop_bits,
-    .data_bits    = data_bits,
-    .flow_control = flow_control,
+    .port_name         = get_env("WAYSURS_SERIAL_TX"),
+    .baud_rate         = baud_rates,
+    .parity_type       = parities,
+    .stop_bits_type    = stop_bits,
+    .data_bits_type    = data_bits,
+    .flow_control_type = flow_control,
   }));
 
   check(rx.open({
-    .port_name    = get_env("WAYSURS_SERIAL_RX"),
-    .baud_rate    = baud_rates,
-    .parity       = parities,
-    .stop_bits    = stop_bits,
-    .data_bits    = data_bits,
-    .flow_control = flow_control,
+    .port_name         = get_env("WAYSURS_SERIAL_RX"),
+    .baud_rate         = baud_rates,
+    .parity_type       = parities,
+    .stop_bits_type    = stop_bits,
+    .data_bits_type    = data_bits,
+    .flow_control_type = flow_control,
   }));
 
   REQUIRE(tx.is_open());
@@ -222,11 +222,11 @@ TEST_CASE("README") {
     port
       .open(
         waysurs::serial_config{
-          .port_name = "PORT NAME",
-          .baud_rate = 115200,
-          .parity    = waysurs::parity::none,
-          .stop_bits = waysurs::stop_bits::one,
-          .data_bits = waysurs::data_bits::eight
+          .port_name      = "PORT NAME",
+          .baud_rate      = 115200,
+          .parity_type    = waysurs::parity::none,
+          .stop_bits_type = waysurs::stop_bits::one,
+          .data_bits_type = waysurs::data_bits::eight
         }
       )
       .and_then([&port] { return port.write("hello world!"); })

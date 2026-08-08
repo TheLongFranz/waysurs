@@ -24,10 +24,10 @@ namespace waysurs {
     ///< 50, 300, 600, 1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200, 230400
     ///< POSIX Only 75, 110, 134, 150, 200, 1800
     ///< Custom baud rates not yet implemented.
-    parity                    parity{parity::none};
-    stop_bits                 stop_bits{stop_bits::one};
-    data_bits                 data_bits{data_bits::eight};
-    flow_control              flow_control{flow_control::none};
+    parity                    parity_type{parity::none};
+    stop_bits                 stop_bits_type{stop_bits::one};
+    data_bits                 data_bits_type{data_bits::eight};
+    flow_control              flow_control_type{flow_control::none};
     std::uint8_t              min_bytes{1}; ///< Minimum bytes before a blocking read returns.
     std::chrono::milliseconds inter_byte_timeout{
       1

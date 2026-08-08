@@ -80,7 +80,7 @@ private:
       tty.c_cflag |= (CREAD | CLOCAL); // necessary
 
       tty.c_cflag &= ~CSIZE;
-      switch (config.data_bits) {
+      switch (config.data_bits_type) {
         using enum waysurs::data_bits;
       case five:  tty.c_cflag |= CS5; break;
       case six:   tty.c_cflag |= CS6; break;
@@ -88,7 +88,7 @@ private:
       case eight: tty.c_cflag |= CS8; break;
       }
 
-      switch (config.parity) {
+      switch (config.parity_type) {
         using enum waysurs::parity;
       case none: tty.c_cflag &= ~PARENB; break;
       case even:
@@ -101,13 +101,13 @@ private:
         break;
       }
 
-      switch (config.stop_bits) {
+      switch (config.stop_bits_type) {
         using enum waysurs::stop_bits;
       case one: tty.c_cflag &= ~CSTOPB; break;
       case two: tty.c_cflag |= CSTOPB; break;
       }
 
-      switch (config.flow_control) {
+      switch (config.flow_control_type) {
         using enum waysurs::flow_control;
       case none:
         tty.c_cflag &= ~CRTSCTS;
