@@ -6,7 +6,6 @@
 #include <filesystem>
 #include <stdexcept>
 #include <string>
-#include <string_view>
 #include <sys/wait.h>
 #include <system_error>
 #include <thread>
@@ -17,18 +16,23 @@
 namespace fs = std::filesystem;
 
 struct serial_listener::impl {
-  static constexpr auto             poll_interval   = std::chrono::milliseconds{50};
-  static constexpr auto             startup_timeout = std::chrono::seconds{5};
-  static constexpr std::string_view tx_link         = "/tmp/serial_tx";
-  static constexpr std::string_view rx_link         = "/tmp/serial_rx";
+  static constexpr auto poll_interval   = std::chrono::milliseconds{50};
+  static constexpr auto startup_timeout = std::chrono::seconds{5};
 
-  pid_t socat_pid{-1};
+  fs::path dir;
+  pid_t    socat_pid{-1};
 
   ~impl() { stop(); }
 
   void start() {
-    const fs::path tx_path{tx_link};
-    const fs::path rx_path{rx_link};
+    char tmpl[] = "/tmp/waysurs_XXXXXX";
+    if (mkdtemp(tmpl) == nullptr) {
+      throw std::system_error{errno, std::system_category(), "mkdtemp failed"};
+    }
+
+    dir = tmpl;
+    const fs::path tx_path{dir / "tx"};
+    const fs::path rx_path{dir / "rx"};
 
     std::error_code ec; // best-effort cleanup, matches old unlink() behavior
     fs::remove(tx_path, ec);
@@ -62,6 +66,8 @@ struct serial_listener::impl {
       waitpid(socat_pid, nullptr, 0);
       socat_pid = -1;
     }
+
+    fs::remove_all(dir);
   }
 
   private:
