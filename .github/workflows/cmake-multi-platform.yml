@@ -23,9 +23,9 @@ jobs:
       #
       # To add more build types (Release, Debug, RelWithDebInfo, etc.) customize the build_type list.
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, windows-latest macos-latest, macos-26-intel]
         build_type: [Release]
-        c_compiler: [gcc-15, clang-20, cl]
+        c_compiler: [gcc-15, clang, clang-20, cl]
         include:
           - os: windows-latest
             c_compiler: cl
@@ -36,11 +36,32 @@ jobs:
           - os: ubuntu-latest
             c_compiler: clang-20
             cpp_compiler: clang++-20
+          - os: macos-latest
+            c_compiler: clang-20
+            cpp_compiler: clang++-20
+          - os: macos-latest
+            c_compiler: clang
+            cpp_compiler: clang++
+          - os: macos-26-intel
+            c_compiler: clang-20
+            cpp_compiler: clang++-20
+          - os: macos-26-intel
+            c_compiler: clang
+            cpp_compiler: clang++
+
         exclude:
           - os: windows-latest
             c_compiler: gcc-15
           - os: windows-latest
             c_compiler: clang-20
+          - os: macos-latest
+            c_compiler: gcc-15
+          - os: macos-latest
+            c_compiler: cl
+          - os: macos-26-intel
+            c_compiler: gcc-15
+          - os: macos-26-intel
+            c_compiler: cl
           - os: ubuntu-latest
             c_compiler: cl
 
@@ -50,6 +71,10 @@ jobs:
       - name: Update Packages (Linux)
         if: runner.os == 'Linux'
         run: sudo apt-get update
+
+      - name: Install LLVM 20 (macOS)
+        if: runner.os == 'macOS' && matrix.c_compiler == 'clang-20'
+        run: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" | brew install llvm@20 Catch2 scocat
 
       - name: Install LLVM 20 (Linux)
         if: runner.os == 'Linux'
