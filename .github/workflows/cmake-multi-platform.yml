@@ -76,13 +76,16 @@ jobs:
         if: runner.os == 'Linux'
         run: sudo apt-get update
 
-      - name: Install Brew (macOS)
-        if: runner.os == 'macOS' && matrix.c_compiler == 'clang-20'
-        run: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-
       - name: Install LLVM 20 (macOS)
         if: runner.os == 'macOS' && matrix.c_compiler == 'clang-20'
         run: brew install llvm@20
+
+      - name: Resolve LLVM 20 path (macOS)
+        if: runner.os == 'macOS' && matrix.c_compiler == 'clang-20'
+        id: llvm-path
+        run: |
+          echo "cc=$(brew --prefix llvm@20)/bin/clang" >> "$GITHUB_OUTPUT"
+          echo "cxx=$(brew --prefix llvm@20)/bin/clang++" >> "$GITHUB_OUTPUT"
 
       - name: Install macOS test requirements
         if: runner.os == 'macOS'
@@ -113,14 +116,21 @@ jobs:
         shell: bash
         run: |
           echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+          if [ "${{ runner.os }}" = "macOS" ] && [ "${{ matrix.c_compiler }}" = "clang-20" ]; then
+            echo "cxx-compiler=${{ steps.llvm-path.outputs.cxx }}" >> "$GITHUB_OUTPUT"
+            echo "c-compiler=${{ steps.llvm-path.outputs.cc }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "cxx-compiler=${{ matrix.cpp_compiler }}" >> "$GITHUB_OUTPUT"
+            echo "c-compiler=${{ matrix.c_compiler }}" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Configure CMake
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
         # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
         run: >
           cmake -B ${{ steps.strings.outputs.build-output-dir }}
-          -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
-          -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
+          -DCMAKE_CXX_COMPILER=${{ steps.strings.outputs.cxx-compiler }}
+          -DCMAKE_C_COMPILER=${{ steps.strings.outputs.c-compiler }}
           -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
           -S ${{ github.workspace }}
 
