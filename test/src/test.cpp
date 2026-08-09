@@ -154,16 +154,19 @@ TEST_CASE_METHOD(
   const auto baud_rates = GENERATE(as<std::uint32_t>{}, 50, 9600, 57600, 230400);
 
 #if defined(__linux__)
-  const auto parities = GENERATE(waysurs::parity::none); // ptys don't honor parity framing
+  const auto parities  = GENERATE(waysurs::parity::none); // ptys don't honor parity framing
+  const auto data_bits = GENERATE(
+    waysurs::data_bits::five, waysurs::data_bits::eight
+  ); // they also don't honour 6/7, relatable
 #else
   const auto parities =
     GENERATE(waysurs::parity::even, waysurs::parity::odd, waysurs::parity::none);
-#endif
-
   const auto data_bits = GENERATE(
     waysurs::data_bits::five, waysurs::data_bits::six, waysurs::data_bits::seven,
     waysurs::data_bits::eight
   );
+#endif
+
   const auto flow_control = GENERATE(
     waysurs::flow_control::none, waysurs::flow_control::hardware, waysurs::flow_control::software
   );
