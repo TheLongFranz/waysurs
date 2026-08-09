@@ -1,4 +1,7 @@
-[![CMake on multiple platforms](https://github.com/TheLongFranz/waysurs/actions/workflows/cmake-multi-platform.yml/badge.svg)](https://github.com/TheLongFranz/waysurs/actions/workflows/cmake-multi-platform.yml)
+[![CI](https://img.shields.io/github/actions/workflow/status/TheLongFranz/waysurs/cmake-multi-platform.yml?style=flat&logo=github&label=CI)](https://github.com/TheLongFranz/waysurs/actions/workflows/cmake-multi-platform.yml)
+[![Licence](https://img.shields.io/github/license/TheLongFranz/waysurs?style=flat)](./LICENSE)
+![C++](https://img.shields.io/badge/c++-%2300599C.svg?style=flat&logo=c%2B%2B&logoColor=white)
+![Platforms](https://img.shields.io/badge/platforms-Linux%20%7C%20macOS-informational?style=flat)
 
 # WAYSURS - Why Are You Still Using RS232?
 
