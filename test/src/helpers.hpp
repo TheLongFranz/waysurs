@@ -6,9 +6,12 @@
 #include <catch2/catch_message.hpp>
 #include <catch2/catch_test_macros.hpp>
 
-#define CHECK_RESULT(expr)                                                                         \
+#define CHECK_RESULT(var_expr)                                                                     \
   do {                                                                                             \
-    const auto& _result = (expr);                                                                  \
+    const auto& _result = (var_expr);                                                              \
+    if (!_result.has_value()) {                                                                    \
+      UNSCOPED_INFO(std::format("{}", _result.error()));                                           \
+    }                                                                                              \
     REQUIRE(_result.has_value());                                                                  \
   } while (0)
 
