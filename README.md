@@ -23,11 +23,11 @@ int main() {
     port
       .open(
         waysurs::serial_config{
-          .port_name = "PORT NAME",
-          .baud_rate = 115200,
-          .parity    = waysurs::parity::none,
-          .stop_bits = waysurs::stop_bits::one,
-          .data_bits = waysurs::data_bits::eight
+          .port_name      = "PORT NAME",
+          .baud_rate      = 115200,
+          .parity_type    = waysurs::parity::none,
+          .stop_bits_type = waysurs::stop_bits::one,
+          .data_bits_type = waysurs::data_bits::eight
         }
       )
       .and_then([&port] { return port.write("hello world!"); })
