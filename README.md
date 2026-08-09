@@ -1,3 +1,5 @@
+[![CMake on multiple platforms](https://github.com/TheLongFranz/waysurs/actions/workflows/cmake-multi-platform.yml/badge.svg)](https://github.com/TheLongFranz/waysurs/actions/workflows/cmake-multi-platform.yml)
+
 # WAYSURS - Why Are You Still Using RS232?
 
 ## What is WAYSURS for?
