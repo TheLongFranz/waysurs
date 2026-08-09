@@ -21,4 +21,4 @@ include(Catch)
 
 target_link_libraries(tests PRIVATE Catch2::Catch2WithMain)
 target_link_libraries(tests PRIVATE waysurs::waysurs)
-catch_discover_tests(tests)
+catch_discover_tests(tests PROPERTIES SKIP_RETURN_CODE 4)
