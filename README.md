@@ -112,7 +112,6 @@ Running tests on MacOS/Linux requires socat, which creates a linked pair of virt
 1. Windows
 1. fuzzing
 1. f/a sanitizer
-1. CI/CD
 
 # License
 
