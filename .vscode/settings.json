@@ -5,5 +5,4 @@
     "cmake.copyCompileCommands": "${workspaceFolder}/compile_commands.json",
     "cmake.parseBuildDiagnostics": false,
     "clangd.pathFallback": "clangd",
-    "clangd.path": "/opt/homebrew/Cellar/llvm@20/20.1.8/bin/clangd"
 }
