@@ -254,3 +254,20 @@ TEST_CASE("README") {
   // correct
   REQUIRE(!(result.has_value()));
 }
+
+TEST_CASE_METHOD(ports_fixture, "Linux port config fail test", "[serial]") {
+  CHECK_RESULT(tx.open({
+    .port_name         = get_env("WAYSURS_SERIAL_TX"),
+    .baud_rate         = 9600,
+    .stop_bits_type    = waysurs::stop_bits::one,
+    .data_bits_type    = waysurs::data_bits::five,
+    .flow_control_type = waysurs::flow_control::none,
+  }));
+  CHECK_RESULT(rx.open({
+    .port_name         = get_env("WAYSURS_SERIAL_RX"),
+    .baud_rate         = 9600,
+    .stop_bits_type    = waysurs::stop_bits::one,
+    .data_bits_type    = waysurs::data_bits::five,
+    .flow_control_type = waysurs::flow_control::none,
+  }));
+}
