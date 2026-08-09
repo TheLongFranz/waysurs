@@ -1,6 +1,6 @@
 [![CI](https://img.shields.io/github/actions/workflow/status/TheLongFranz/waysurs/cmake-multi-platform.yml?style=flat&logo=github&label=CI)](https://github.com/TheLongFranz/waysurs/actions/workflows/cmake-multi-platform.yml)
 [![Licence](https://img.shields.io/github/license/TheLongFranz/waysurs?style=flat)](./LICENSE)
-![C++](https://img.shields.io/badge/c++-%2300599C.svg?style=flat&logo=c%2B%2B&logoColor=white)
+![C++23](https://img.shields.io/badge/c++-%2300599C.svg?style=flat&logo=c%2B%2B&logoColor=white)
 ![Platforms](https://img.shields.io/badge/platforms-Linux%20%7C%20macOS-informational?style=flat)
 
 # WAYSURS - Why Are You Still Using RS232?
@@ -44,7 +44,9 @@ int main() {
 
 ## Prerequisites
 
-**MacOS**
+Building WAYSURS requires a C++23 capable compiler, below are steps for installing LLVM 20 for reference (because that's what I used).
+
+### MacOS
 
 ```bash
 brew install llvm@20 ninja cmake
@@ -52,20 +54,26 @@ brew install llvm@20 ninja cmake
 brew install catch2 socat
 ```
 
-**Linux**
+### Linux
 
 ```bash
-apt install llvm-20 ninja-build cmake
+wget https://apt.llvm.org/llvm.sh
+chmod +x llvm.sh
+sudo ./llvm.sh 20
+sudo apt install ninja-build cmake
 # catch2 & socat are only required for building tests, not consuming the library
-apt install catch2 socat
+sudo apt install catch2 socat
 ```
 
-Windows **(Currently Unsupported)**
+### Windows **(Currently Unsupported)**
 
 If Windows **were** supported you would run this command
 
 ```powershell
 choco install llvm --version=20.1.8
+choco install ninja cmake
+# Once I have figured out what I will use for testing virtual ports on Windows I will add it here
+choco install catch2 {what I will use for testing virtual ports on Windows}
 ```
 
 ## Installation (CMake)
