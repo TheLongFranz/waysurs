@@ -153,6 +153,7 @@ TEST_CASE_METHOD(
 ) {
   const auto baud_rates = GENERATE(as<std::uint32_t>{}, 50, 9600, 57600, 230400);
 
+// pty drivers on linux don't implement CS6/CS7 or parity other than none, tcsetattr returns EINVAL
 #if defined(__linux__)
   const auto parities  = GENERATE(waysurs::parity::none); // ptys don't honor parity framing
   const auto data_bits = GENERATE(
