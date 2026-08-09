@@ -155,7 +155,7 @@ TEST_CASE_METHOD(
 
 // pty drivers on linux don't implement CS6/CS7 or parity other than none, tcsetattr returns EINVAL
 #if defined(__linux__)
-  const auto parities  = GENERATE(waysurs::parity::none); // ptys don't honor parity framing
+  const auto parities  = GENERATE(waysurs::parity::none); // ptys don't honour parity framing
   const auto data_bits = GENERATE(
     waysurs::data_bits::five, waysurs::data_bits::eight
   ); // they also don't honour 6/7, relatable
