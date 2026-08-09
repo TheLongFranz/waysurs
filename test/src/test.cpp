@@ -163,6 +163,26 @@ TEST_CASE_METHOD(
   );
   const auto stop_bits = GENERATE(waysurs::stop_bits::one, waysurs::stop_bits::two);
 
+  CAPTURE(baud_rates, parities, data_bits, flow_control, stop_bits);
+
+  CHECK_RESULT(tx.open({
+    .port_name         = get_env("WAYSURS_SERIAL_TX"),
+    .baud_rate         = baud_rates,
+    .parity_type       = parities,
+    .stop_bits_type    = stop_bits,
+    .data_bits_type    = data_bits,
+    .flow_control_type = flow_control,
+  }));
+
+  CHECK_RESULT(rx.open({
+    .port_name         = get_env("WAYSURS_SERIAL_RX"),
+    .baud_rate         = baud_rates,
+    .parity_type       = parities,
+    .stop_bits_type    = stop_bits,
+    .data_bits_type    = data_bits,
+    .flow_control_type = flow_control,
+  }));
+
   CHECK_RESULT(tx.open({
     .port_name         = get_env("WAYSURS_SERIAL_TX"),
     .baud_rate         = baud_rates,
