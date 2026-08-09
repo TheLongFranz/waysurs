@@ -53,6 +53,8 @@ jobs:
           # - os: windows-latest
           #   c_compiler: gcc-15
           # - os: windows-latest
+          #   c_compiler: clang
+          # - os: windows-latest
           #   c_compiler: clang-20
           # - os: windows-latest
           #   c_compiler: clang

@@ -37,14 +37,14 @@ TEST_CASE_METHOD(ports_fixture, "open(): succeeds with valid port name", "[seria
 }
 
 TEST_CASE_METHOD(ports_fixture, "open(): open -> close -> open succeeds with the same config") {
-  check(tx.close());
-  check(tx.open({.port_name = get_env("WAYSURS_SERIAL_TX")}));
+  CHECK_RESULT(tx.close());
+  CHECK_RESULT(tx.open({.port_name = get_env("WAYSURS_SERIAL_TX")}));
 
   REQUIRE(tx.is_open());
 }
 
 TEST_CASE_METHOD(ports_fixture, "open(): open -> open(new config) succeeds") {
-  check(tx.open({.port_name = get_env("WAYSURS_SERIAL_RX")}));
+  CHECK_RESULT(tx.open({.port_name = get_env("WAYSURS_SERIAL_RX")}));
 
   REQUIRE(tx.is_open());
 }
@@ -74,7 +74,7 @@ TEST_CASE_METHOD(
   constexpr std::string_view msg{"hello\r"};
 
   const auto write_result_byte_span(tx.write(std::as_bytes(std::span{msg})));
-  check(write_result_byte_span);
+  CHECK_RESULT(write_result_byte_span);
   REQUIRE(write_result_byte_span == msg.size());
 }
 
@@ -86,7 +86,7 @@ TEST_CASE_METHOD(
   constexpr std::string_view msg{"hello\r"};
 
   const auto write_result_string_view{tx.write(msg)};
-  check(write_result_string_view);
+  CHECK_RESULT(write_result_string_view);
   REQUIRE(write_result_string_view == msg.size());
 }
 
@@ -114,11 +114,11 @@ TEST_CASE_METHOD(
   constexpr std::string_view msg{"hello\r"};
 
   const auto bytes_written{tx.write(msg)};
-  check(bytes_written);
+  CHECK_RESULT(bytes_written);
   REQUIRE(bytes_written == msg.size());
 
   const auto bytes_read{rx.read(msg.size())};
-  check(bytes_read);
+  CHECK_RESULT(bytes_read);
   REQUIRE(to_string(bytes_read.value()) == msg);
 }
 
@@ -134,12 +134,12 @@ TEST_CASE_METHOD(
   constexpr std::string_view msg{"hello\r"};
 
   const auto bytes_written{tx.write(msg)};
-  check(bytes_written);
+  CHECK_RESULT(bytes_written);
   REQUIRE(bytes_written == msg.size());
 
   std::array<std::byte, msg.size()> buffer{};
   const auto                        bytes_read{rx.read(buffer)};
-  check(bytes_read);
+  CHECK_RESULT(bytes_read);
   REQUIRE(bytes_read.value() == msg.size());
   REQUIRE(to_string(buffer) == msg);
 }
@@ -163,7 +163,7 @@ TEST_CASE_METHOD(
   );
   const auto stop_bits = GENERATE(waysurs::stop_bits::one, waysurs::stop_bits::two);
 
-  check(tx.open({
+  CHECK_RESULT(tx.open({
     .port_name         = get_env("WAYSURS_SERIAL_TX"),
     .baud_rate         = baud_rates,
     .parity_type       = parities,
@@ -172,7 +172,7 @@ TEST_CASE_METHOD(
     .flow_control_type = flow_control,
   }));
 
-  check(rx.open({
+  CHECK_RESULT(rx.open({
     .port_name         = get_env("WAYSURS_SERIAL_RX"),
     .baud_rate         = baud_rates,
     .parity_type       = parities,
@@ -187,11 +187,11 @@ TEST_CASE_METHOD(
   constexpr std::string_view msg{"hello\r"};
 
   const auto bytes_written{tx.write(msg)};
-  check(bytes_written);
+  CHECK_RESULT(bytes_written);
   REQUIRE(bytes_written.value() == msg.size());
 
   const auto bytes_read{rx.read(6)};
-  check(bytes_read);
+  CHECK_RESULT(bytes_read);
   REQUIRE(to_string(bytes_read.value()) == msg);
 }
 
@@ -205,12 +205,12 @@ TEST_CASE_METHOD(ports_fixture, "move semantics: moved to serial port succeeds t
   constexpr std::string_view msg{"hello\r"};
 
   const auto bytes_written{port_tx.write(msg)};
-  check(bytes_written);
+  CHECK_RESULT(bytes_written);
   REQUIRE(bytes_written == msg.size());
 
   std::array<std::byte, msg.size()> buffer{};
   const auto                        bytes_read{port_rx.read(buffer)};
-  check(bytes_read);
+  CHECK_RESULT(bytes_read);
   REQUIRE(bytes_read.value() == msg.size());
   REQUIRE(to_string(buffer) == msg);
 }
