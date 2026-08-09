@@ -10,6 +10,7 @@
 
 // Posix headers
 #include <fcntl.h>
+#include <sys/fcntl.h>
 #include <termios.h>
 #include <unistd.h>
 
@@ -72,7 +73,7 @@ private:
       return std::clamp(std::chrono::ceil<deciseconds>(ms).count(), 0, 255);
     }
 
-    [[nodiscard]] static auto build_termios(const serial_config& config) noexcept
+    [[nodiscard]] static auto build_termios(const serial_config& config)
       -> std::expected<termios, error> {
       struct termios tty{};
       cfmakeraw(&tty); // boilerplate ICANON, ECHO, ECHONL, ISIG, IEXTEN, IGNBRK,
@@ -158,7 +159,8 @@ public:
         );
       }
 
-      if (m_port_id = ::open(config.port_name.c_str(), O_RDWR | O_NOCTTY); m_port_id < 0) {
+      if (m_port_id = ::open(config.port_name.c_str(), O_RDWR | O_NOCTTY | O_NONBLOCK);
+          m_port_id < 0) {
         return std::unexpected(detail::make_error(error_type::open, "Error opening port", errno));
       }
 
@@ -174,6 +176,15 @@ public:
         const auto _{close()};
         return std::unexpected(result);
       }
+
+      if (const int flags = fcntl(m_port_id, F_GETFL);
+          flags < 0 || fcntl(m_port_id, F_SETFL, flags & ~O_NONBLOCK)) {
+        const auto result =
+          detail::make_error(error_type::open, "OS Error restoring blocking mode", errno);
+        const auto _{close()};
+        return std::unexpected(result);
+      }
+
       m_config = config;
       return {};
     }
