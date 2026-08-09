@@ -6,6 +6,7 @@
 #include <print>
 #include <span>
 #include <string_view>
+#include <thread>
 #include <utility>
 
 #include <catch2/catch_message.hpp>
@@ -183,24 +184,6 @@ TEST_CASE_METHOD(
     .flow_control_type = flow_control,
   }));
 
-  CHECK_RESULT(tx.open({
-    .port_name         = get_env("WAYSURS_SERIAL_TX"),
-    .baud_rate         = baud_rates,
-    .parity_type       = parities,
-    .stop_bits_type    = stop_bits,
-    .data_bits_type    = data_bits,
-    .flow_control_type = flow_control,
-  }));
-
-  CHECK_RESULT(rx.open({
-    .port_name         = get_env("WAYSURS_SERIAL_RX"),
-    .baud_rate         = baud_rates,
-    .parity_type       = parities,
-    .stop_bits_type    = stop_bits,
-    .data_bits_type    = data_bits,
-    .flow_control_type = flow_control,
-  }));
-
   REQUIRE(tx.is_open());
   REQUIRE(rx.is_open());
 
@@ -213,6 +196,14 @@ TEST_CASE_METHOD(
   const auto bytes_read{rx.read(6)};
   CHECK_RESULT(bytes_read);
   REQUIRE(to_string(bytes_read.value()) == msg);
+  //
+  if (const auto result = tx.close(); !result.has_value()) {
+    CAPTURE(result.error());
+  }
+  if (const auto result = rx.close(); !result.has_value()) {
+    CAPTURE(result.error());
+  }
+  std::this_thread::sleep_for(std::chrono::milliseconds(10)); // diagnostic only
 }
 
 TEST_CASE_METHOD(ports_fixture, "move semantics: moved to serial port succeeds to write") {
