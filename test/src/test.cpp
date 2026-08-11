@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <format>
-// #include <print>
+#include <print>
 #include <ranges>
 #include <span>
 #include <string>
@@ -62,11 +62,13 @@ TEST_CASE_METHOD(ports_fixture, "is_open(): succeeds when port is closed") {
 }
 
 TEST_CASE("close(): succeeds when port hasn't been opened", "[serial]") {
-  SKIP("implement later");
+  waysurs::serial_port tx;
+  REQUIRE(tx.close());
 }
 
-TEST_CASE("close(): succeeds with a previously closed port", "[serial]") {
-  SKIP("implement later");
+TEST_CASE_METHOD(ports_fixture, "close(): succeeds with a previously closed port", "[serial]") {
+  REQUIRE(tx.close());
+  REQUIRE(tx.close());
 }
 
 TEST_CASE_METHOD(
