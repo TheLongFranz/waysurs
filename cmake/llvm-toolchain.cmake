@@ -68,6 +68,14 @@ set(CMAKE_AR "${LLVM_BIN_DIR}/llvm-ar" CACHE FILEPATH "Archiver")
 set(CMAKE_NM "${LLVM_BIN_DIR}/llvm-nm" CACHE FILEPATH "Symbol lister")
 set(CMAKE_RANLIB "${LLVM_BIN_DIR}/llvm-ranlib" CACHE FILEPATH "Archive indexer")
 
+# ─── Standard library ──────────────────────────────────────────────────────────
+# Clang is defaulting to an older GCC stdlib on Linux, this forces libc++.
+if(NOT CMAKE_HOST_SYSTEM_NAME STREQUAL "Darwin")
+    set(CMAKE_CXX_FLAGS_INIT "${CMAKE_CXX_FLAGS_INIT} -stdlib=libc++")
+    set(CMAKE_EXE_LINKER_FLAGS_INIT "${CMAKE_EXE_LINKER_FLAGS_INIT} -stdlib=libc++")
+    set(CMAKE_SHARED_LINKER_FLAGS_INIT "${CMAKE_SHARED_LINKER_FLAGS_INIT} -stdlib=libc++")
+endif()
+
 # ld.lld doesn't exist on macOS — use lld via -fuse-ld instead
 if(NOT CMAKE_HOST_SYSTEM_NAME STREQUAL "Darwin")
     set(CMAKE_LINKER "${LLVM_BIN_DIR}/ld.lld" CACHE FILEPATH "Linker")
