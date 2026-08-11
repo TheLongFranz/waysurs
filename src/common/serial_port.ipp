@@ -13,7 +13,11 @@ namespace waysurs {
   auto serial_port::is_open() const noexcept -> bool {
     return p_impl->is_open();
   }
-  
+
+  auto serial_port::flush() -> std::expected<void, error> {
+    return p_impl->flush();
+  }
+
   auto serial_port::open(const serial_config& config) -> std::expected<void, error> {
     return p_impl->open(config);
   }

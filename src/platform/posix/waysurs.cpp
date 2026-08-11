@@ -141,6 +141,16 @@ public:
 
     [[nodiscard]] auto is_open() const noexcept -> bool { return m_config.has_value(); }
 
+    [[nodiscard]] auto flush() -> std::expected<void, error> {
+      if (tcflush(m_port_id, TCIOFLUSH) != 0) {
+        const auto result =
+          detail::make_error(error_type::open, "OS Error flushing port buffers", errno);
+        const auto _{close()};
+        return std::unexpected(result);
+      }
+      return {};
+    }
+
     [[nodiscard]] auto open(const serial_config& config) -> std::expected<void, error> {
       if (is_open()) {
         if (m_config.value() == config) {
@@ -183,6 +193,10 @@ public:
           detail::make_error(error_type::open, "OS Error restoring blocking mode", errno);
         const auto _{close()};
         return std::unexpected(result);
+      }
+
+      if (const auto result = flush(); !result.has_value()) {
+        return result;
       }
 
       m_config = config;

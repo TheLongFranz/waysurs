@@ -3,8 +3,10 @@
 #include <cstdint>
 #include <cstdlib>
 #include <format>
-#include <print>
+// #include <print>
+#include <ranges>
 #include <span>
+#include <string>
 #include <string_view>
 #include <thread>
 #include <utility>
@@ -13,6 +15,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
+#include <vector>
 #include <waysurs/waysurs.hpp>
 #include "helpers.hpp"
 #include "ports_fixture.hpp"
@@ -101,8 +104,27 @@ TEST_CASE("read(): before opening port fails with error::config") {
   REQUIRE(!(port.read(32)));
 }
 
-TEST_CASE("read() -> write() binary roundtrip 0x00 -> 0xFF") {
-  SKIP("implement later");
+TEST_CASE_METHOD(ports_fixture, "read() -> write() binary roundtrip 0x00 -> 0xFF") {
+  const auto hex_values{
+    std::views::iota(0, 256) |
+    std::views::transform([](int i) { return std::format("{:#04x}", i); }) |
+    std::ranges::to<std::vector<std::string>>()
+  };
+
+  REQUIRE(tx.is_open());
+  REQUIRE(rx.is_open());
+
+  for (const auto& msg: hex_values) {
+    const auto bytes_written{tx.write(msg)};
+    CHECK_RESULT(bytes_written);
+    REQUIRE(bytes_written == msg.size());
+
+    CAPTURE(msg);
+
+    const auto bytes_read{rx.read(msg.size())};
+    CHECK_RESULT(bytes_read);
+    REQUIRE(to_string(bytes_read.value()) == msg);
+  }
 }
 
 TEST_CASE_METHOD(
