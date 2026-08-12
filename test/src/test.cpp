@@ -19,6 +19,7 @@
 #include <waysurs/waysurs.hpp>
 #include "helpers.hpp"
 #include "ports_fixture.hpp"
+#include "waysurs/detail/error.hpp"
 
 TEST_CASE_METHOD(ports_fixture, "open(): fails with non-standard baud rates", "[serial]") {
   const auto baud_rates = GENERATE(as<std::uint32_t>{}, 0, 42, 451, 123'456'789);
@@ -26,13 +27,17 @@ TEST_CASE_METHOD(ports_fixture, "open(): fails with non-standard baud rates", "[
 }
 
 TEST_CASE("open(): fails with invalid port name", "[serial]") {
-  auto port{waysurs::serial_port()};
-  REQUIRE(!(port.open(waysurs::serial_config{.port_name = "bob/hoskins"})).has_value());
+  auto       port{waysurs::serial_port()};
+  const auto result{port.open(waysurs::serial_config{.port_name = "bob/hoskins"})};
+  REQUIRE(!result.has_value());
+  REQUIRE(result.error().type == waysurs::error_type::open);
 }
 
 TEST_CASE("open(): fails with empty port name", "[serial]") {
-  auto port{waysurs::serial_port()};
-  REQUIRE(!(port.open(waysurs::serial_config{.port_name = ""})));
+  auto       port{waysurs::serial_port()};
+  const auto result{port.open(waysurs::serial_config{.port_name = ""})};
+  REQUIRE(!result.has_value());
+  REQUIRE(result.error().type == waysurs::error_type::config);
   REQUIRE(!(port.is_open()));
 }
 
@@ -97,16 +102,20 @@ TEST_CASE_METHOD(
 }
 
 TEST_CASE("write(): before opening port fails with error::config") {
-  auto port{waysurs::serial_port()};
-  REQUIRE(!(port.write("This should fail\r")));
+  auto       port{waysurs::serial_port()};
+  const auto result{port.write("This should fail\r")};
+  REQUIRE(!result.has_value());
+  REQUIRE(result.error().type == waysurs::error_type::config);
 }
 
 TEST_CASE("read(): before opening port fails with error::config") {
-  auto port{waysurs::serial_port()};
-  REQUIRE(!(port.read(32)));
+  auto       port{waysurs::serial_port()};
+  const auto result{port.read(32)};
+  REQUIRE(!result.has_value());
+  REQUIRE(result.error().type == waysurs::error_type::config);
 }
 
-TEST_CASE_METHOD(ports_fixture, "read() -> write() binary roundtrip 0x00 -> 0xFF") {
+TEST_CASE_METHOD(ports_fixture, "read() -> write() binary roundtrip 0x00 -> 0xFF succeeds") {
   const auto hex_values{
     std::views::iota(0, 256) |
     std::views::transform([](int i) { return std::format("{:#04x}", i); }) |
