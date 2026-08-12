@@ -66,6 +66,14 @@ TEST_CASE_METHOD(ports_fixture, "is_open(): succeeds when port is closed") {
   REQUIRE(!(tx.is_open()));
 }
 
+TEST_CASE_METHOD(ports_fixture, "flush() succeeds") {
+  REQUIRE(tx.write("this is a message that we are going to flush"));
+  CHECK_RESULT(tx.flush());
+  const auto result{tx.read(0)};
+  REQUIRE(result.has_value());
+  REQUIRE(result.value().size() == 0);
+}
+
 TEST_CASE("close(): succeeds when port hasn't been opened", "[serial]") {
   waysurs::serial_port tx;
   REQUIRE(tx.close());
