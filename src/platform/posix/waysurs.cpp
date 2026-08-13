@@ -4,23 +4,19 @@
 #include <cstddef>
 #include <cstdint>
 #include <expected>
+#include <format>
 #include <limits>
 #include <optional>
 #include <span>
 #include <string_view>
+#include <vector>
 
 // Posix headers
 #include <fcntl.h>
-#include <sys/fcntl.h>
 #include <termios.h>
 #include <unistd.h>
 
-/*
- * termios man page
- * https://man7.org/linux/man-pages/man3/termios.3.html
- */
-
-#include <vector>
+// Library headers
 #include <waysurs/waysurs.hpp>
 
 namespace waysurs {

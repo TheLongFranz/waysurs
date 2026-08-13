@@ -9,8 +9,12 @@ class serial_listener : public Catch::EventListenerBase {
   std::unique_ptr<impl> p_impl;
 
   public:
-  serial_listener(Catch::IConfig const* config);
-  ~serial_listener();
+  serial_listener(const serial_listener&)            = delete;
+  serial_listener(serial_listener&&)                 = delete;
+  serial_listener& operator=(const serial_listener&) = delete;
+  serial_listener& operator=(serial_listener&&)      = delete;
+  explicit serial_listener(Catch::IConfig const* config);
+  ~serial_listener() override;
   void testRunStarting(Catch::TestRunInfo const&) override;
   void testRunEnded(Catch::TestRunStats const&) override;
 };
