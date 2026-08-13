@@ -61,13 +61,14 @@ struct serial_listener::impl {
   }
 
   void stop() {
+    std::error_code ec; // non-throwing exists(), matches old access() behavior
     if (socat_pid > 0) {
       kill(socat_pid, SIGTERM);
       waitpid(socat_pid, nullptr, 0);
       socat_pid = -1;
     }
 
-    fs::remove_all(dir);
+    fs::remove_all(dir, ec);
   }
 
   private:
