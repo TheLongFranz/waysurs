@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdlib>
 #include <format>
 #include <string>
 
@@ -14,13 +15,6 @@
     }                                                                                              \
     REQUIRE(_result.has_value());                                                                  \
   } while (0)
-
-inline auto check(const auto& var) -> void {
-  if (!(var.has_value())) {
-    UNSCOPED_INFO(std::format("{}", var.error()));
-  }
-  REQUIRE(var.has_value());
-}
 
 [[nodiscard]] inline auto get_env(const char* env) -> const char* {
   const char* result = std::getenv(env);
