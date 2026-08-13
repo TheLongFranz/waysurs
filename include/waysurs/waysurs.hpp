@@ -71,7 +71,7 @@ public:
 
     /// @param config - config struct defining port configuration
     /// @note returns a no-op success if the config hasn't changed, void on success, error on
-    /// failure. Always flushes the buffer
+    /// failure. Unread input is discarded when a new config is applied.
     [[nodiscard]] auto open(const serial_config& config) -> std::expected<void, error>;
 
     /// @note returns a no-op success if a port was never opened, void on

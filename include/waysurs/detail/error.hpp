@@ -9,15 +9,7 @@
 #include <system_error>
 
 namespace waysurs {
-  enum class error_type : std::uint8_t {
-    config,
-    open,
-    close,
-    read,
-    write,
-    out_of_range,
-    baud_rate
-  };
+  enum class error_type : std::uint8_t { config, open, close, read, write, flush, baud_rate };
 
   struct error {
     error_type                     type;

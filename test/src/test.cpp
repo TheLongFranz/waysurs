@@ -1,4 +1,5 @@
 #include <array>
+#include <chrono>
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
@@ -8,18 +9,16 @@
 #include <span>
 #include <string>
 #include <string_view>
-#include <thread>
 #include <utility>
+#include <vector>
 
 #include <catch2/catch_message.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
-#include <vector>
 #include <waysurs/waysurs.hpp>
 #include "helpers.hpp"
 #include "ports_fixture.hpp"
-#include "waysurs/detail/error.hpp"
 
 TEST_CASE_METHOD(ports_fixture, "open(): fails with non-standard baud rates", "[serial]") {
   const auto baud_rates = GENERATE(as<std::uint32_t>{}, 0, 42, 451, 123'456'789);
@@ -66,12 +65,34 @@ TEST_CASE_METHOD(ports_fixture, "is_open(): succeeds when port is closed") {
   REQUIRE(!(tx.is_open()));
 }
 
-TEST_CASE_METHOD(ports_fixture, "flush() succeeds") {
-  REQUIRE(tx.write("this is a message that we are going to flush"));
-  CHECK_RESULT(tx.flush());
-  const auto result{tx.read(0)};
-  REQUIRE(result.has_value());
-  REQUIRE(result.value().size() == 0);
+TEST_CASE_METHOD(ports_fixture, "flush()") {
+  constexpr auto msg{std::string_view{"this is a message that we are going to flush"}};
+
+  CHECK_RESULT(tx.open({
+    .port_name          = get_env("WAYSURS_SERIAL_TX"),
+    .min_bytes          = 0,
+    .inter_byte_timeout = std::chrono::milliseconds{500},
+  }));
+
+  CHECK_RESULT(tx.write(msg));
+
+  std::array<std::byte, 1> first{};
+  const auto               arrived{rx.read(first)};
+  CHECK_RESULT(arrived);
+  REQUIRE(arrived.value() == 1);
+
+  CHECK_RESULT(rx.flush());
+
+  const auto after{tx.read(msg.size())};
+  CHECK_RESULT(after);
+  REQUIRE(after.value().empty());
+}
+
+TEST_CASE("flush(): fails on an unopened port with error_type::config") {
+  waysurs::serial_port tx;
+  const auto           result{tx.flush()};
+  REQUIRE(!result.has_value());
+  REQUIRE(result.error().type == waysurs::error_type::config);
 }
 
 TEST_CASE("close(): succeeds when port hasn't been opened", "[serial]") {
@@ -234,9 +255,6 @@ TEST_CASE_METHOD(
     .flow_control_type = flow_control,
   }));
 
-  REQUIRE(tx.is_open());
-  REQUIRE(rx.is_open());
-
   constexpr std::string_view msg{"hello\r"};
 
   const auto bytes_written{tx.write(msg)};
@@ -246,14 +264,9 @@ TEST_CASE_METHOD(
   const auto bytes_read{rx.read(6)};
   CHECK_RESULT(bytes_read);
   REQUIRE(to_string(bytes_read.value()) == msg);
-  //
-  if (const auto result = tx.close(); !result.has_value()) {
-    CAPTURE(result.error());
-  }
-  if (const auto result = rx.close(); !result.has_value()) {
-    CAPTURE(result.error());
-  }
-  std::this_thread::sleep_for(std::chrono::milliseconds(10)); // diagnostic only
+
+  CHECK_RESULT(tx.close());
+  CHECK_RESULT(rx.close());
 }
 
 TEST_CASE_METHOD(ports_fixture, "move semantics: moved to serial port succeeds to write") {

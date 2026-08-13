@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <expected>
+#include <limits>
 #include <optional>
 #include <span>
 #include <string_view>
@@ -70,7 +71,12 @@ private:
 
     [[nodiscard]] static auto ms_to_vtime(std::chrono::milliseconds ms) noexcept -> std::uint8_t {
       using deciseconds = std::chrono::duration<int, std::deci>;
-      return std::clamp(std::chrono::ceil<deciseconds>(ms).count(), 0, 255);
+      auto max_vtime_ms{
+        std::chrono::milliseconds(std::numeric_limits<std::uint8_t>::max() * 100)
+      }; // 25.5 seconds
+      auto clamped_ms{std::clamp(ms, std::chrono::milliseconds::zero(), max_vtime_ms)};
+
+      return static_cast<std::uint8_t>(std::chrono::ceil<deciseconds>(clamped_ms).count());
     }
 
     [[nodiscard]] static auto build_termios(const serial_config& config)
@@ -124,7 +130,6 @@ private:
         break;
       }
 
-      // implement apply_timeout()
       tty.c_cc[VTIME] = ms_to_vtime(config.inter_byte_timeout);
 
       tty.c_cc[VMIN] = config.min_bytes;
@@ -142,11 +147,18 @@ public:
     [[nodiscard]] auto is_open() const noexcept -> bool { return m_config.has_value(); }
 
     [[nodiscard]] auto flush() -> std::expected<void, error> {
+      if (!is_open()) {
+        return std::unexpected(
+          detail::make_error(error_type::config, "Cannot flush an unopened port")
+        );
+      }
+
       if (tcflush(m_port_id, TCIOFLUSH) != 0) {
-        const auto result =
-          detail::make_error(error_type::open, "OS Error flushing port buffers", errno);
-        const auto _{close()};
-        return std::unexpected(result);
+        return std::unexpected(
+          waysurs::detail::make_error(
+            waysurs::error_type::flush, "OS Error flushing port buffers", errno
+          )
+        );
       }
       return {};
     }
@@ -180,7 +192,8 @@ public:
         return std::unexpected(tty.error());
       }
 
-      if (tcsetattr(m_port_id, TCSANOW, &tty.value()) != 0) {
+      if (tcsetattr(m_port_id, TCSAFLUSH, &tty.value()) != 0) {
+        // if (tcsetattr(m_port_id, TCSANOW, &tty.value()) != 0) {
         const auto result =
           detail::make_error(error_type::open, "OS Error setting port attributes", errno);
         const auto _{close()};
@@ -193,10 +206,6 @@ public:
           detail::make_error(error_type::open, "OS Error restoring blocking mode", errno);
         const auto _{close()};
         return std::unexpected(result);
-      }
-
-      if (const auto result = flush(); !result.has_value()) {
-        return result;
       }
 
       m_config = config;
