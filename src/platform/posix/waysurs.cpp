@@ -140,8 +140,10 @@ private:
       return tty;
     }
 
+    auto discard_close() -> void { [[maybe_unused]] const auto _{close()}; }
+
 public:
-    ~impl() { const auto _{close()}; }
+    ~impl() { discard_close(); }
 
     [[nodiscard]] auto is_open() const noexcept -> bool { return m_config.has_value(); }
 
@@ -187,7 +189,7 @@ public:
 
       auto tty{build_termios(config)};
       if (!(tty.has_value())) {
-        const auto _{close()};
+        discard_close();
         return std::unexpected(tty.error());
       }
 
@@ -195,7 +197,7 @@ public:
         // if (tcsetattr(m_port_id, TCSANOW, &tty.value()) != 0) {
         const auto result =
           detail::make_error(error_type::open, "OS Error setting port attributes", errno);
-        const auto _{close()};
+        discard_close();
         return std::unexpected(result);
       }
 
@@ -203,7 +205,7 @@ public:
           flags < 0 || fcntl(m_port_id, F_SETFL, flags & ~O_NONBLOCK)) {
         const auto result =
           detail::make_error(error_type::open, "OS Error restoring blocking mode", errno);
-        const auto _{close()};
+        discard_close();
         return std::unexpected(result);
       }
 
