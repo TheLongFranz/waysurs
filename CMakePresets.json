@@ -10,24 +10,39 @@
             "name": "config-base",
             "hidden": true,
             "displayName": "base Configuration",
-            "description": "Default build using Ninja generator",
+            "description": "Warnings, language level and tooling shared by every preset",
             "generator": "Ninja",
+            "binaryDir": "${sourceDir}/out/build/${presetName}",
             "toolchainFile": "cmake/llvm-toolchain.cmake",
             "cacheVariables": {
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
                 "CMAKE_CXX_STANDARD": "23",
                 "CMAKE_CXX_STANDARD_REQUIRED": "ON",
-                "CMAKE_CXX_EXTENSIONS": "OFF"
+                "CMAKE_CXX_EXTENSIONS": "OFF",
+                "CMAKE_CXX_FLAGS": "-Wall -Wextra -Wpedantic -Wshadow -Wnon-virtual-dtor -Wno-system-headers -Wunreachable-code -Wuninitialized -Wold-style-cast -Werror -ftrivial-auto-var-init=pattern -fdiagnostics-color=always -ftemplate-backtrace-limit=0"
             }
         },
         {
             "name": "debug",
             "displayName": "Debug with Custom Clang",
-            "description": "Unoptimised build with full debug symbols",
+            "description": "Unoptimised build with full debug symbols and UBSan",
             "inherits": "config-base",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
-                "CMAKE_CXX_FLAGS": "-Wall -Wextra -Wpedantic -Wshadow -Wnon-virtual-dtor -Wno-missing-designated-field-initializers -Wno-system-headers -ftrivial-auto-var-init=pattern -Wunreachable-code -Wuninitialized -Wold-style-cast -Werror -Og -fdiagnostics-color=always -ftemplate-backtrace-limit=0 -fsanitize=undefined -fno-omit-frame-pointer"
+                "CMAKE_CXX_FLAGS_DEBUG": "-Og -g -fno-omit-frame-pointer -fsanitize=undefined -fno-sanitize-recover=all",
+                "CMAKE_EXE_LINKER_FLAGS": "-fsanitize=undefined"
+            }
+        },
+        {
+            "name": "asan-ubsan",
+            "displayName": "AddressSanitizer + UndefinedBehaviorSanitizer",
+            "description": "Unoptimised instrumented build that aborts on the first sanitizer finding",
+            "inherits": "config-base",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_CXX_FLAGS_DEBUG": "-Og -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=all",
+                "CMAKE_EXE_LINKER_FLAGS": "-fsanitize=address,undefined",
+                "CMAKE_DISABLE_FIND_PACKAGE_Catch2": "ON"
             }
         },
         {
@@ -37,7 +52,8 @@
             "inherits": "config-base",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
-                "CMAKE_CXX_FLAGS": "-Wall -Wextra -Wpedantic -Wshadow -Wnon-virtual-dtor -Wno-missing-designated-field-initializers -Wno-system-headers -ftrivial-auto-var-init=pattern -Wunreachable-code -Wuninitialized -Wold-style-cast -Werror -O3 -D_FORTIFY_SOURCE=2 -fstack-protector-strong -flto -fdiagnostics-color=always -ftemplate-backtrace-limit=0"
+                "CMAKE_CXX_FLAGS_RELEASE": "-O3 -DNDEBUG -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -fstack-protector-strong",
+                "CMAKE_INTERPROCEDURAL_OPTIMIZATION": "ON"
             }
         },
         {
@@ -47,7 +63,7 @@
             "inherits": "config-base",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "RelWithDebInfo",
-                "CMAKE_CXX_FLAGS": "-Wall -Wextra -Wpedantic -Wshadow -Wnon-virtual-dtor -Wno-missing-designated-field-initializers -Wno-system-headers -ftrivial-auto-var-init=pattern -Wunreachable-code -Wuninitialized -Wold-style-cast -Werror -O3 -D_FORTIFY_SOURCE=2 -fstack-protector-strong"
+                "CMAKE_CXX_FLAGS_RELWITHDEBINFO": "-O3 -g -DNDEBUG -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -fstack-protector-strong"
             }
         },
         {
@@ -57,8 +73,73 @@
             "inherits": "config-base",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "MinSizeRel",
-                "CMAKE_CXX_FLAGS": "-Wall -Wextra -Wpedantic -Wshadow -Wnon-virtual-dtor -Wno-missing-designated-field-initializers -Wno-system-headers -ftrivial-auto-var-init=pattern -Wunreachable-code -Wuninitialized -Wold-style-cast -Werror -O3 -D_FORTIFY_SOURCE=2 -fstack-protector-strong -flto"
+                "CMAKE_CXX_FLAGS_MINSIZEREL": "-Os -DNDEBUG -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -fstack-protector-strong",
+                "CMAKE_INTERPROCEDURAL_OPTIMIZATION": "ON"
             }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "debug",
+            "configurePreset": "debug"
+        },
+        {
+            "name": "asan-ubsan",
+            "configurePreset": "asan-ubsan"
+        },
+        {
+            "name": "release",
+            "configurePreset": "release"
+        },
+        {
+            "name": "relwithdebinfo",
+            "configurePreset": "relwithdebinfo"
+        },
+        {
+            "name": "minsizerel",
+            "configurePreset": "minsizerel"
+        }
+    ],
+    "testPresets": [
+        {
+            "name": "test-base",
+            "hidden": true,
+            "output": {
+                "outputOnFailure": true
+            },
+            "execution": {
+                "noTestsAction": "error",
+                "stopOnFailure": false
+            }
+        },
+        {
+            "name": "debug",
+            "configurePreset": "debug",
+            "inherits": "test-base"
+        },
+        {
+            "name": "asan-ubsan",
+            "configurePreset": "asan-ubsan",
+            "inherits": "test-base",
+            "environment": {
+                "ASAN_OPTIONS": "abort_on_error=1:strict_string_checks=1:detect_stack_use_after_return=1",
+                "UBSAN_OPTIONS": "print_stacktrace=1:halt_on_error=1"
+            }
+        },
+        {
+            "name": "release",
+            "configurePreset": "release",
+            "inherits": "test-base"
+        },
+        {
+            "name": "relwithdebinfo",
+            "configurePreset": "relwithdebinfo",
+            "inherits": "test-base"
+        },
+        {
+            "name": "minsizerel",
+            "configurePreset": "minsizerel",
+            "inherits": "test-base"
         }
     ]
 }

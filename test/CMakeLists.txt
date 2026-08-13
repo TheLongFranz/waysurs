@@ -21,4 +21,7 @@ include(Catch)
 
 target_link_libraries(tests PRIVATE Catch2::Catch2WithMain)
 target_link_libraries(tests PRIVATE waysurs::waysurs)
-catch_discover_tests(tests)
+# PRE_TEST defers test enumeration from build time to ctest time. Without it the build runs
+# `tests --list-tests`, which fails or hangs whenever the host cannot execute the target -- e.g.
+# instrumented builds, or cross-compilation.
+catch_discover_tests(tests DISCOVERY_MODE PRE_TEST)

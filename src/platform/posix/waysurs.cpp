@@ -23,6 +23,8 @@ namespace waysurs {
 
   struct serial_port::impl {
 private:
+    // The baud rates below are the values users pass in, not constants worth naming.
+    // NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
     [[nodiscard]] static auto standard_baud_rates(const std::uint32_t rate)
       -> std::expected<speed_t, error> {
       switch (rate) {
@@ -44,6 +46,7 @@ private:
       case 57600:  return B57600;
       case 115200: return B115200;
       case 230400: return B230400;
+      default:     break;
       }
       return std::unexpected(
         detail::make_error(
@@ -52,6 +55,7 @@ private:
         )
       );
     }
+    // NOLINTEND(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
 
     [[nodiscard]] static auto apply_baud_rate(termios& tty, std::uint32_t rate)
       -> std::expected<void, error> {
@@ -64,12 +68,16 @@ private:
       return std::unexpected(tmp_rate.error());
     }
 
+    /// @note VTIME is a single byte counting deciseconds, so timeouts saturate at 25.5s
     [[nodiscard]] static auto ms_to_vtime(std::chrono::milliseconds ms) noexcept -> std::uint8_t {
       using deciseconds = std::chrono::duration<int, std::deci>;
-      auto max_vtime_ms{
-        std::chrono::milliseconds(std::numeric_limits<std::uint8_t>::max() * 100)
-      }; // 25.5 seconds
-      auto clamped_ms{std::clamp(ms, std::chrono::milliseconds::zero(), max_vtime_ms)};
+
+      constexpr auto ms_per_decisecond = 100;
+      constexpr auto max_vtime_ms =
+        std::chrono::milliseconds{std::numeric_limits<std::uint8_t>::max() * ms_per_decisecond};
+
+      // clamp before narrowing, so an out-of-range timeout saturates rather than wrapping
+      const auto clamped_ms{std::clamp(ms, std::chrono::milliseconds::zero(), max_vtime_ms)};
 
       return static_cast<std::uint8_t>(std::chrono::ceil<deciseconds>(clamped_ms).count());
     }
@@ -139,11 +147,19 @@ private:
     auto discard_close() -> void { [[maybe_unused]] const auto _{close()}; }
 
 public:
+    impl() = default;
     ~impl() { discard_close(); }
+
+    /// @note impl owns a file descriptor and is never copied or moved; serial_port moves the
+    /// owning unique_ptr instead
+    impl(const impl&)            = delete;
+    impl& operator=(const impl&) = delete;
+    impl(impl&&)                 = delete;
+    impl& operator=(impl&&)      = delete;
 
     [[nodiscard]] auto is_open() const noexcept -> bool { return m_config.has_value(); }
 
-    [[nodiscard]] auto flush() -> std::expected<void, error> {
+    [[nodiscard]] auto flush() const -> std::expected<void, error> {
       if (!is_open()) {
         return std::unexpected(
           detail::make_error(error_type::config, "Cannot flush an unopened port")
@@ -152,17 +168,15 @@ public:
 
       if (tcflush(m_port_id, TCIOFLUSH) != 0) {
         return std::unexpected(
-          waysurs::detail::make_error(
-            waysurs::error_type::flush, "OS Error flushing port buffers", errno
-          )
+          detail::make_error(error_type::flush, "OS Error flushing port buffers", errno)
         );
       }
       return {};
     }
 
     [[nodiscard]] auto open(const serial_config& config) -> std::expected<void, error> {
-      if (is_open()) {
-        if (m_config.value() == config) {
+      if (m_config.has_value()) {
+        if (*m_config == config) {
           return {};
         }
         if (const auto result = close(); !result.has_value()) {
@@ -189,8 +203,9 @@ public:
         return std::unexpected(tty.error());
       }
 
+      // TCSAFLUSH applies the settings once output has drained and discards any input received
+      // while the port was still running at the previous settings, i.e. misframed bytes
       if (tcsetattr(m_port_id, TCSAFLUSH, &tty.value()) != 0) {
-        // if (tcsetattr(m_port_id, TCSANOW, &tty.value()) != 0) {
         const auto result =
           detail::make_error(error_type::open, "OS Error setting port attributes", errno);
         discard_close();
@@ -198,7 +213,7 @@ public:
       }
 
       if (const int flags = fcntl(m_port_id, F_GETFL);
-          flags < 0 || fcntl(m_port_id, F_SETFL, flags & ~O_NONBLOCK)) {
+          flags < 0 || fcntl(m_port_id, F_SETFL, flags & ~O_NONBLOCK) < 0) {
         const auto result =
           detail::make_error(error_type::open, "OS Error restoring blocking mode", errno);
         discard_close();
@@ -223,7 +238,7 @@ public:
       return {};
     }
 
-    [[nodiscard]] auto read(std::size_t buffer_size)
+    [[nodiscard]] auto read(std::size_t buffer_size) const
       -> std::expected<std::vector<std::byte>, error> {
       if (is_open()) {
         std::vector<std::byte> read_buf(buffer_size);
@@ -242,7 +257,8 @@ public:
       );
     }
 
-    [[nodiscard]] auto read(std::span<std::byte> buffer) -> std::expected<std::size_t, error> {
+    [[nodiscard]] auto read(std::span<std::byte> buffer) const
+      -> std::expected<std::size_t, error> {
       if (is_open()) {
         const auto bytes_read = ::read(m_port_id, buffer.data(), buffer.size());
         if (bytes_read < 0) {
@@ -257,7 +273,7 @@ public:
       );
     }
 
-    [[nodiscard]] auto write(std::span<const std::byte> buffer)
+    [[nodiscard]] auto write(std::span<const std::byte> buffer) const
       -> std::expected<std::size_t, error> {
       if (is_open()) {
         if (const auto result = ::write(m_port_id, buffer.data(), buffer.size()); result >= 0) {
@@ -272,7 +288,8 @@ public:
       );
     }
 
-    [[nodiscard]] auto write(const std::string_view buffer) -> std::expected<std::size_t, error> {
+    [[nodiscard]] auto write(const std::string_view buffer) const
+      -> std::expected<std::size_t, error> {
       return write(std::as_bytes(std::span{buffer}));
     }
 

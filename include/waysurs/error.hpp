@@ -12,9 +12,11 @@ namespace waysurs {
   enum class error_type : std::uint8_t { config, open, close, read, write, flush, baud_rate };
 
   struct error {
-    error_type                     type;
-    std::string                    message;
-    std::optional<std::error_code> system_code;
+    error_type  type;
+    std::string message;
+    /// @note defaulted so aggregate initialisation without a system code does not trip
+    /// -Wmissing-field-initializers on GCC or -Wmissing-designated-field-initializers on Clang
+    std::optional<std::error_code> system_code{std::nullopt};
   };
   namespace detail {
 

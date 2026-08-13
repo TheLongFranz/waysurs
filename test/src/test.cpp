@@ -68,8 +68,8 @@ TEST_CASE_METHOD(ports_fixture, "is_open(): succeeds when port is closed") {
 TEST_CASE_METHOD(ports_fixture, "flush()") {
   constexpr auto msg{std::string_view{"this is a message that we are going to flush"}};
 
-  CHECK_RESULT(tx.open({
-    .port_name          = get_env("WAYSURS_SERIAL_TX"),
+  CHECK_RESULT(rx.open({
+    .port_name          = get_env("WAYSURS_SERIAL_RX"),
     .min_bytes          = 0,
     .inter_byte_timeout = std::chrono::milliseconds{500},
   }));
@@ -83,7 +83,7 @@ TEST_CASE_METHOD(ports_fixture, "flush()") {
 
   CHECK_RESULT(rx.flush());
 
-  const auto after{tx.read(msg.size())};
+  const auto after{rx.read(msg.size())};
   CHECK_RESULT(after);
   REQUIRE(after.value().empty());
 }

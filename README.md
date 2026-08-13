@@ -105,13 +105,61 @@ Building WAYSURS requires a **C++23** capable compiler. There is a toolchain alr
 ```bash
 git clone https://github.com/TheLongFranz/waysurs.git
 cd waysurs
-cmake --preset release -B out/build/release
-cmake --build out/build/release
+cmake --preset release
+cmake --build --preset release
+```
+
+Each preset writes to `out/build/<preset>`. The available presets are `debug`, `release`,
+`relwithdebinfo`, `minsizerel` and `asan-ubsan`.
+
+To build with a compiler other than LLVM 20, pass both compilers explicitly — the toolchain
+skips its own auto-detection when they are already set:
+
+```bash
+cmake --preset release -DCMAKE_C_COMPILER=gcc-15 -DCMAKE_CXX_COMPILER=g++-15
 ```
 
 ## Running Tests
 
 Running tests on MacOS/Linux requires socat, which creates a linked pair of virtual serial ports for each test case. If you are building this library standalone i.e. PROJECT_IS_TOP_LEVEL then tests will always build as they are the only executable target in the library.
+
+```bash
+ctest --preset release
+```
+
+To run the suite under AddressSanitizer and UndefinedBehaviorSanitizer — the same configuration
+CI uses, which aborts on the first finding:
+
+```bash
+cmake --preset asan-ubsan
+cmake --build --preset asan-ubsan
+ctest --preset asan-ubsan
+```
+
+The preset builds Catch2 from source rather than using an installed copy — linking instrumented
+code against an uninstrumented Catch2 makes ASan report spurious container overflows.
+
+> **macOS:** use Apple Clang for this preset (`-DCMAKE_C_COMPILER=clang
+> -DCMAKE_CXX_COMPILER=clang++`). Homebrew LLVM 20's ASan runtime deadlocks during its own
+> initialisation against current macOS dyld, so any instrumented binary hangs at startup.
+
+## Linting
+
+CI runs both of these as hard gates, and `.clang-tidy` sets `WarningsAsErrors: '*'`. The LLVM 20
+toolchain also wires clang-tidy into every local build, so warnings surface as you compile.
+
+```bash
+find include src test \( -name '*.hpp' -o -name '*.cpp' -o -name '*.ipp' \) -print0 \
+  | xargs -0 clang-format --style=file --dry-run --Werror
+
+cmake --preset release -DCMAKE_CXX_SCAN_FOR_MODULES=OFF
+run-clang-tidy -p out/build/release "$(pwd)/(src|test)/"
+```
+
+`CMAKE_CXX_SCAN_FOR_MODULES=OFF` keeps Ninja's `@...modmap` arguments out of
+`compile_commands.json`; they only exist after a build and clang-tidy treats them as a hard error.
+On macOS Homebrew's LLVM is keg-only, so point the tools at it explicitly — for example
+`-clang-tidy-binary "$(brew --prefix llvm@20)/bin/clang-tidy"`.
 
 ## Todo
 

@@ -1,5 +1,18 @@
+# Project-specific suppressions (everything else in `*` is enforced as an error):
+#
+#   hicpp-signed-bitwise            termios flag macros (CS8, PARENB, CRTSCTS...) are signed ints
+#                                   from system headers; every c_cflag assignment trips this.
+#   *-vararg                        open() and fcntl() are variadic by POSIX definition.
+#   cppcoreguidelines-avoid-do-while  do { ... } while (0) is the standard idiom for statement-like
+#                                   macros; CHECK_RESULT flags this at every call site.
+#
+# Narrower suppressions live at their use site as NOLINT with a reason.
 Checks: >
   *,
+  -hicpp-signed-bitwise,
+  -cppcoreguidelines-pro-type-vararg,
+  -hicpp-vararg,
+  -cppcoreguidelines-avoid-do-while,
   -abseil-*,
   -altera-*,
   -android-*,
@@ -21,7 +34,9 @@ Checks: >
   -readability-identifier-length,
   -misc-include-cleaner,
 
-WarningsAsErrors: ''
+# Every enabled check is an error. The toolchain pins LLVM 20 (cmake/llvm-toolchain.cmake) so a
+# newer clang-tidy cannot introduce checks that break the build without an explicit version bump.
+WarningsAsErrors: '*'
 
 CheckOptions:
   # -- bugprone --

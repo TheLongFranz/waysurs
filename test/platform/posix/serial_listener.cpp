@@ -22,11 +22,20 @@ struct serial_listener::impl {
   fs::path dir;
   pid_t    socat_pid{-1};
 
+  impl() = default;
   ~impl() { stop(); }
 
+  /// @note impl owns a child process and a temp directory; serial_listener moves the owning
+  /// unique_ptr instead
+  impl(const impl&)            = delete;
+  impl& operator=(const impl&) = delete;
+  impl(impl&&)                 = delete;
+  impl& operator=(impl&&)      = delete;
+
   void start() {
-    char tmpl[] = "/tmp/waysurs_XXXXXX";
-    if (mkdtemp(tmpl) == nullptr) {
+    // mkdtemp rewrites the trailing XXXXXX in place, which stays within the string's bounds
+    std::string tmpl{"/tmp/waysurs_XXXXXX"};
+    if (mkdtemp(tmpl.data()) == nullptr) {
       throw std::system_error{errno, std::system_category(), "mkdtemp failed"};
     }
 
@@ -40,10 +49,11 @@ struct serial_listener::impl {
 
     // Build argv before fork(): no allocation in the child (fork/malloc
     // safety).
-    char                 cmd[]  = "socat";
-    std::string          arg_tx = std::string{"PTY,link="} + tx_path.string() + ",raw,echo=0";
-    std::string          arg_rx = std::string{"PTY,link="} + rx_path.string() + ",raw,echo=0";
-    std::array<char*, 4> args{cmd, arg_tx.data(), arg_rx.data(), nullptr};
+    std::string cmd{"socat"};
+    std::string arg_tx = std::string{"PTY,link="} + tx_path.string() + ",raw,echo=0";
+    std::string arg_rx = std::string{"PTY,link="} + rx_path.string() + ",raw,echo=0";
+    // NOLINTNEXTLINE(modernize-use-designated-initializers) -- std::array takes no designators
+    std::array<char*, 4> args{cmd.data(), arg_tx.data(), arg_rx.data(), nullptr};
 
     socat_pid = fork();
     if (socat_pid == -1) {
@@ -56,8 +66,11 @@ struct serial_listener::impl {
 
     wait_for_links(tx_path, rx_path);
 
+    // Catch2 runs listeners on the main thread before any test begins, so setenv is safe here
+    // NOLINTBEGIN(concurrency-mt-unsafe)
     setenv("WAYSURS_SERIAL_TX", tx_path.c_str(), 1);
     setenv("WAYSURS_SERIAL_RX", rx_path.c_str(), 1);
+    // NOLINTEND(concurrency-mt-unsafe)
   }
 
   void stop() {
