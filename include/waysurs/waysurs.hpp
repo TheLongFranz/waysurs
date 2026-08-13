@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "detail/error.hpp"
+#include "error.hpp"
 
 namespace waysurs {
   enum class parity : std::uint8_t { none, odd, even };

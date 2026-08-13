@@ -22,7 +22,6 @@
 
 #include <vector>
 #include <waysurs/waysurs.hpp>
-#include "waysurs/detail/error.hpp"
 
 namespace waysurs {
 
