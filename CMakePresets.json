@@ -57,6 +57,17 @@
             }
         },
         {
+            "name": "lint",
+            "displayName": "Static analysis configuration",
+            "description": "Compile database for clang-tidy only; never built",
+            "inherits": "release",
+            "cacheVariables": {
+                "CMAKE_CXX_SCAN_FOR_MODULES": "OFF",
+                "CMAKE_DISABLE_FIND_PACKAGE_Catch2": "ON",
+                "CMAKE_INTERPROCEDURAL_OPTIMIZATION": "OFF"
+            }
+        },
+        {
             "name": "relwithdebinfo",
             "displayName": "RelWithDebInfo with Custom Clang",
             "description": "Optimised build with debug symbols (good for profiling)",

@@ -5,6 +5,10 @@
 #   *-vararg                        open() and fcntl() are variadic by POSIX definition.
 #   cppcoreguidelines-avoid-do-while  do { ... } while (0) is the standard idiom for statement-like
 #                                   macros; CHECK_RESULT flags this at every call site.
+#   bugprone-chained-comparison     REQUIRE(a == b) expands to `Decomposer() <= a == b`, which is a
+#                                   chained comparison by construction. Catch2 carries a NOLINT for
+#                                   this from 3.6 onwards, so relying on it makes the gate depend on
+#                                   which Catch2 the machine happens to have installed.
 #
 # Narrower suppressions live at their use site as NOLINT with a reason.
 Checks: >
@@ -13,6 +17,7 @@ Checks: >
   -cppcoreguidelines-pro-type-vararg,
   -hicpp-vararg,
   -cppcoreguidelines-avoid-do-while,
+  -bugprone-chained-comparison,
   -abseil-*,
   -altera-*,
   -android-*,

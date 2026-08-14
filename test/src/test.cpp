@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
+#include <expected>
 #include <format>
 #include <print>
 #include <ranges>
@@ -16,6 +17,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
+#include <waysurs/error.hpp>
 #include <waysurs/waysurs.hpp>
 #include "helpers.hpp"
 #include "ports_fixture.hpp"

@@ -1,7 +1,21 @@
 set(LLVM_MAJOR_VERSION 20)
 
-# ─── Skip if compilers already defined (e.g. via CMakeUserPresets.json) ───────
-if(DEFINED CMAKE_C_COMPILER AND DEFINED CMAKE_CXX_COMPILER)
+# try_compile() re-runs this toolchain in a fresh CMake instance and does not
+# forward -D compiler settings, because a toolchain is normally what defines
+# them. Without this list the auto-detection below runs inside the compiler
+# check, which then tests a different compiler than the build uses and FORCEs
+# clang-tidy into it -- failing on any machine that has clang but not clang-tidy.
+list(APPEND CMAKE_TRY_COMPILE_PLATFORM_VARIABLES
+    CMAKE_C_COMPILER
+    CMAKE_CXX_COMPILER
+    CMAKE_C_CLANG_TIDY
+    CMAKE_CXX_CLANG_TIDY
+)
+
+# ─── Skip if a compiler is already defined (e.g. via CMakeUserPresets.json) ───
+# CXX alone is the right condition: this project is CXX-only, so requiring C too
+# would leave the guard ineffective wherever only CMAKE_CXX_COMPILER is set.
+if(DEFINED CMAKE_CXX_COMPILER)
     message(STATUS "Compilers already defined, skipping LLVM toolchain auto-detection")
     return()
 endif()

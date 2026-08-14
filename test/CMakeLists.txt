@@ -11,9 +11,13 @@ find_package(Catch2 3 QUIET)
 if(NOT Catch2_FOUND)
     include(FetchContent)
 
+    # SYSTEM marks Catch2's headers as third-party, matching how find_package's
+    # imported target behaves. Without it clang-tidy reports its macro internals
+    # (static test registration, function size) against our test sources.
     FetchContent_Declare(Catch2
         GIT_REPOSITORY https://github.com/catchorg/Catch2
         GIT_TAG v3.9.1
+        SYSTEM
     )
     FetchContent_MakeAvailable(Catch2)
 endif()

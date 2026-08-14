@@ -152,12 +152,14 @@ toolchain also wires clang-tidy into every local build, so warnings surface as y
 find include src test \( -name '*.hpp' -o -name '*.cpp' -o -name '*.ipp' \) -print0 \
   | xargs -0 clang-format --style=file --dry-run --Werror
 
-cmake --preset release -DCMAKE_CXX_SCAN_FOR_MODULES=OFF
-run-clang-tidy -p out/build/release "$(pwd)/(src|test)/"
+cmake --preset lint
+run-clang-tidy -p out/build/lint "$(pwd)/(src|test)/"
 ```
 
-`CMAKE_CXX_SCAN_FOR_MODULES=OFF` keeps Ninja's `@...modmap` arguments out of
-`compile_commands.json`; they only exist after a build and clang-tidy treats them as a hard error.
+The `lint` preset exists so analysis is reproducible: it drops Ninja's `@...modmap` arguments
+(which only exist after a build and which clang-tidy treats as a hard error) and pins Catch2 to the
+version in `test/CMakeLists.txt` rather than using whichever one is installed.
+
 On macOS Homebrew's LLVM is keg-only, so point the tools at it explicitly — for example
 `-clang-tidy-binary "$(brew --prefix llvm@20)/bin/clang-tidy"`.
 
