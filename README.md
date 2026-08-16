@@ -140,7 +140,7 @@ The preset builds Catch2 from source rather than using an installed copy — lin
 code against an uninstrumented Catch2 makes ASan report spurious container overflows.
 
 > **macOS:** use Apple Clang for this preset (`-DCMAKE_C_COMPILER=clang
-> -DCMAKE_CXX_COMPILER=clang++`). Homebrew LLVM 20's ASan runtime deadlocks during its own
+-DCMAKE_CXX_COMPILER=clang++`). Homebrew LLVM 20's ASan runtime deadlocks during its own
 > initialisation against current macOS dyld, so any instrumented binary hangs at startup.
 
 ## Linting
@@ -169,7 +169,6 @@ On macOS Homebrew's LLVM is keg-only, so point the tools at it explicitly — fo
 1. custom baud rates
 1. Windows
 1. fuzzing
-1. f/a sanitizer
 
 # License
 
