@@ -5,11 +5,22 @@ target_include_directories(
     waysurs_waysurs PUBLIC "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
 )
 
-if(WIN32)
+if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     message(FATAL_ERROR "Windows is not currently supported.")
     # target_sources(waysurs_waysurs PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/platform/windows/waysurs.cpp)
-elseif(APPLE OR UNIX)
-    target_sources(waysurs_waysurs PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/platform/posix/waysurs.cpp)
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    target_sources(waysurs_waysurs PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/platform/posix/waysurs.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/platform/posix/enumerate_macos.cpp)
+    target_link_libraries(waysurs_waysurs PRIVATE
+        "-framework CoreFoundation"
+        "-framework IOKit"
+    )
+
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    target_sources(waysurs_waysurs PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/platform/posix/waysurs.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/platform/posix/enumerate_linux.cpp)
+else()
+    message(FATAL_ERROR "There is no implementation for this Platform.")
 endif()
 
 set_property(TARGET waysurs_waysurs PROPERTY EXPORT_NAME waysurs)

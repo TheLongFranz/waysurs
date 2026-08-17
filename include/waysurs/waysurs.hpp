@@ -36,6 +36,8 @@ namespace waysurs {
     bool operator==(const serial_config&) const = default;
   };
 
+  [[nodiscard, maybe_unused]] auto list_ports() -> std::expected<std::vector<std::string>, error>;
+
   class serial_port {
     struct impl;
     std::unique_ptr<impl> p_impl;

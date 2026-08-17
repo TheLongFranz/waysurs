@@ -17,13 +17,16 @@ If you are unfortunate enough to find yourself needing to communicate with a dev
 #include <waysurs/waysurs.hpp>
 
 int main() {
-  waysurs::serial_port port;
+  auto       port{waysurs::serial_port{}};
+  const auto ports_listed{waysurs::list_ports()};
+  const auto port_name =
+    (ports_listed && !ports_listed->empty()) ? ports_listed->at(0) : "no ports found";
 
   const auto result{
     port
       .open(
         waysurs::serial_config{
-          .port_name      = "PORT NAME",
+          .port_name      = port_name,
           .baud_rate      = 115200,
           .parity_type    = waysurs::parity::none,
           .stop_bits_type = waysurs::stop_bits::one,
@@ -165,7 +168,7 @@ On macOS Homebrew's LLVM is keg-only, so point the tools at it explicitly — fo
 
 ## Todo
 
-1. port enumeration
+1. port enumeration (Linux)
 1. custom baud rates
 1. Windows
 1. fuzzing
