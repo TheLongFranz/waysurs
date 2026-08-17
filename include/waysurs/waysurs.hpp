@@ -24,17 +24,21 @@ namespace waysurs {
     ///< 50, 300, 600, 1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200, 230400
     ///< POSIX Only 75, 110, 134, 150, 200, 1800
     ///< Custom baud rates not yet implemented.
-    parity                    parity_type{parity::none};
-    stop_bits                 stop_bits_type{stop_bits::one};
-    data_bits                 data_bits_type{data_bits::eight};
-    flow_control              flow_control_type{flow_control::none};
-    std::uint8_t              min_bytes{1}; ///< Minimum bytes before a blocking read returns.
-    std::chrono::milliseconds inter_byte_timeout{
-      1
-    }; ///< Timeout between reading bytes. Rounds up to the nearest 100ms on POSIX systems
+    parity       parity_type{parity::none};
+    stop_bits    stop_bits_type{stop_bits::one};
+    data_bits    data_bits_type{data_bits::eight};
+    flow_control flow_control_type{flow_control::none};
+    std::uint8_t min_bytes{1}; ///< Minimum bytes before a blocking read returns.
+    /// @note Timeout between reading bytes. Rounds up to the nearest 100ms on POSIX systems
+    std::chrono::milliseconds inter_byte_timeout{1};
 
     bool operator==(const serial_config&) const = default;
   };
+
+  /// @note returns list of active serial ports on success, error on failure. No ports found is
+  /// never an error, if no ports are found then an empty vector is returned. The default way to
+  /// check if the return value is safe is if(has_value() && !empty())
+  [[nodiscard, maybe_unused]] auto list_ports() -> std::expected<std::vector<std::string>, error>;
 
   class serial_port {
     struct impl;

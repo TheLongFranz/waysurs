@@ -22,6 +22,11 @@
 #include "helpers.hpp"
 #include "ports_fixture.hpp"
 
+TEST_CASE("list_ports()") {
+  const auto result{waysurs::list_ports()};
+  CHECK_RESULT(result);
+}
+
 TEST_CASE_METHOD(ports_fixture, "open(): fails with non-standard baud rates", "[serial]") {
   const auto baud_rates = GENERATE(as<std::uint32_t>{}, 0, 42, 451, 123'456'789);
   REQUIRE(!(tx.open({.port_name = get_env("WAYSURS_SERIAL_TX"), .baud_rate = baud_rates})));
@@ -30,16 +35,16 @@ TEST_CASE_METHOD(ports_fixture, "open(): fails with non-standard baud rates", "[
 TEST_CASE("open(): fails with invalid port name", "[serial]") {
   auto       port{waysurs::serial_port()};
   const auto result{port.open(waysurs::serial_config{.port_name = "bob/hoskins"})};
-  REQUIRE(!result.has_value());
+  REQUIRE_FALSE(result.has_value());
   REQUIRE(result.error().type == waysurs::error_type::open);
 }
 
 TEST_CASE("open(): fails with empty port name", "[serial]") {
   auto       port{waysurs::serial_port()};
   const auto result{port.open(waysurs::serial_config{.port_name = ""})};
-  REQUIRE(!result.has_value());
+  REQUIRE_FALSE(result.has_value());
   REQUIRE(result.error().type == waysurs::error_type::config);
-  REQUIRE(!(port.is_open()));
+  REQUIRE_FALSE(port.is_open());
 }
 
 TEST_CASE_METHOD(ports_fixture, "open(): succeeds with valid port name", "[serial]") {
@@ -64,7 +69,7 @@ TEST_CASE_METHOD(ports_fixture, "is_open(): succeeds when port is closed") {
 
   REQUIRE(tx.close().has_value());
 
-  REQUIRE(!(tx.is_open()));
+  REQUIRE_FALSE(tx.is_open());
 }
 
 TEST_CASE_METHOD(ports_fixture, "flush()") {
@@ -93,7 +98,7 @@ TEST_CASE_METHOD(ports_fixture, "flush()") {
 TEST_CASE("flush(): fails on an unopened port with error_type::config") {
   waysurs::serial_port tx;
   const auto           result{tx.flush()};
-  REQUIRE(!result.has_value());
+  REQUIRE_FALSE(result.has_value());
   REQUIRE(result.error().type == waysurs::error_type::config);
 }
 
@@ -135,7 +140,7 @@ TEST_CASE_METHOD(
 TEST_CASE("write(): before opening port fails with error::config") {
   auto       port{waysurs::serial_port()};
   const auto result{port.write("This should fail\r")};
-  REQUIRE(!result.has_value());
+  REQUIRE_FALSE(result.has_value());
   REQUIRE(result.error().type == waysurs::error_type::config);
 }
 
@@ -292,13 +297,16 @@ TEST_CASE_METHOD(ports_fixture, "move semantics: moved to serial port succeeds t
 }
 
 TEST_CASE("README") {
-  waysurs::serial_port port;
+  auto       port{waysurs::serial_port{}};
+  const auto ports_listed{waysurs::list_ports()};
+  const auto port_name =
+    (ports_listed && !ports_listed->empty()) ? ports_listed->at(0) : "no ports found";
 
   const auto result{
     port
       .open(
         waysurs::serial_config{
-          .port_name      = "PORT NAME",
+          .port_name      = port_name,
           .baud_rate      = 115200,
           .parity_type    = waysurs::parity::none,
           .stop_bits_type = waysurs::stop_bits::one,
@@ -315,7 +323,5 @@ TEST_CASE("README") {
       })
   };
 
-  // this test case exists purely as a compile-time check to ensure that the README example is
-  // correct
-  REQUIRE(!(result.has_value()));
+  REQUIRE(ports_listed.has_value());
 }
