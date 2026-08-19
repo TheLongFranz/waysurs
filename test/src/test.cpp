@@ -216,6 +216,26 @@ TEST_CASE_METHOD(
 
 TEST_CASE_METHOD(
   ports_fixture,
+  "read(buffer): succeeds with a very long roundtrip message to virtual "
+  "tx/rx pair",
+  "[serial]"
+) {
+  REQUIRE(tx.is_open());
+  REQUIRE(rx.is_open());
+
+  const auto bytes_written{tx.write(study_in_scarlet_ch1)};
+  CHECK_RESULT(bytes_written);
+  REQUIRE(bytes_written == study_in_scarlet_ch1.size());
+
+  std::array<std::byte, study_in_scarlet_ch1.size()> buffer{};
+  const auto                                         bytes_read{rx.read(buffer)};
+  CHECK_RESULT(bytes_read);
+  REQUIRE(bytes_read.value() == study_in_scarlet_ch1.size());
+  REQUIRE(to_string(buffer) == study_in_scarlet_ch1);
+}
+
+TEST_CASE_METHOD(
+  ports_fixture,
   "read(): all config options succeed with roundtrip message to "
   "virtual tx/rx pair",
   "[serial]"
