@@ -39,9 +39,9 @@ namespace waysurs {
 template<>
 struct std::formatter<waysurs::error> : std::formatter<std::string_view> {
   auto format(const waysurs::error& err, auto& ctx) const {
-    if (err.system_code) {
-      return std::format_to(ctx.out(), "{}: {}", err.message, err.system_code->message());
-    }
-    return std::format_to(ctx.out(), "{}", err.message);
+    const auto text = err.system_code
+                        ? std::format("{}: {}", err.message, err.system_code->message())
+                        : err.message;
+    return std::formatter<std::string_view>::format(text, ctx);
   }
 };
