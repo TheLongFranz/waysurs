@@ -115,7 +115,7 @@ cmake --build --preset release
 Each preset writes to `out/build/<preset>`. The available presets are `debug`, `release`,
 `relwithdebinfo`, `minsizerel` and `asan-ubsan`.
 
-To build with a compiler other than LLVM 20, pass both compilers explicitly — the toolchain
+To build with a compiler other than LLVM 20, pass both compilers explicitly. The toolchain
 skips its own auto-detection when they are already set:
 
 ```bash
@@ -130,8 +130,8 @@ Running tests on MacOS/Linux requires socat, which creates a linked pair of virt
 ctest --preset release
 ```
 
-To run the suite under AddressSanitizer and UndefinedBehaviorSanitizer — the same configuration
-CI uses, which aborts on the first finding:
+To run the suite under AddressSanitizer and UndefinedBehaviorSanitizer (the same configuration
+CI uses) which aborts on the first finding:
 
 ```bash
 cmake --preset asan-ubsan
@@ -139,7 +139,7 @@ cmake --build --preset asan-ubsan
 ctest --preset asan-ubsan
 ```
 
-The preset builds Catch2 from source rather than using an installed copy — linking instrumented
+The preset builds Catch2 from source rather than using an installed copy. Linking instrumented
 code against an uninstrumented Catch2 makes ASan report spurious container overflows.
 
 > **macOS:** use Apple Clang for this preset (`-DCMAKE_C_COMPILER=clang
@@ -163,7 +163,7 @@ The `lint` preset exists so analysis is reproducible: it drops Ninja's `@...modm
 (which only exist after a build and which clang-tidy treats as a hard error) and pins Catch2 to the
 version in `test/CMakeLists.txt` rather than using whichever one is installed.
 
-On macOS Homebrew's LLVM is keg-only, so point the tools at it explicitly — for example
+On macOS Homebrew's LLVM is keg-only, so point the tools at it explicitly, e.g.
 `-clang-tidy-binary "$(brew --prefix llvm@20)/bin/clang-tidy"`.
 
 ## Todo

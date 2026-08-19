@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <array>
 #include <chrono>
 #include <cstddef>
@@ -5,11 +6,13 @@
 #include <cstdlib>
 #include <expected>
 #include <format>
+#include <iterator>
 #include <print>
 #include <ranges>
 #include <span>
 #include <string>
 #include <string_view>
+#include <thread>
 #include <utility>
 #include <vector>
 
@@ -212,6 +215,56 @@ TEST_CASE_METHOD(
   CHECK_RESULT(bytes_read);
   REQUIRE(bytes_read.value() == msg.size());
   REQUIRE(to_string(buffer) == msg);
+}
+
+TEST_CASE_METHOD(
+  ports_fixture,
+  "read(buffer): succeeds with a very long roundtrip message to virtual "
+  "tx/rx pair",
+  "[serial]"
+) {
+  REQUIRE(tx.is_open());
+
+  // PTY buffer pair size is 1024 bytes, ::write() blocks after the first 1024 so we deadlock
+  // without draining
+  CHECK_RESULT(rx.open({
+    .port_name          = get_env("WAYSURS_SERIAL_RX"),
+    .min_bytes          = 0,
+    .inter_byte_timeout = std::chrono::milliseconds{200},
+  }));
+
+  // Catch2's assertion macros are not thread safe, so the reader only collects bytes and
+  // every REQUIRE happens back on the main thread once it has joined.
+  std::vector<std::byte> received;
+  received.reserve(study_in_scarlet_ch1.size());
+
+  auto reader{std::jthread{[&] {
+    constexpr auto read_timeout{std::chrono::seconds{10}};
+    constexpr auto chunk_size{std::size_t{256}};
+
+    std::array<std::byte, chunk_size> chunk{};
+    const auto                        deadline{std::chrono::steady_clock::now() + read_timeout};
+
+    while (received.size() < study_in_scarlet_ch1.size() &&
+           std::chrono::steady_clock::now() < deadline) {
+      const auto bytes_read{rx.read(chunk)};
+      if (!bytes_read.has_value()) {
+        break;
+      }
+      std::ranges::copy(std::span{chunk}.first(bytes_read.value()), std::back_inserter(received));
+    }
+  }}};
+
+  const auto bytes_written{tx.write(study_in_scarlet_ch1)};
+  CHECK_RESULT(bytes_written);
+  CAPTURE(bytes_written);
+  REQUIRE(bytes_written.value() == study_in_scarlet_ch1.size());
+
+  reader.join();
+
+  CAPTURE(received.size());
+  REQUIRE(received.size() == study_in_scarlet_ch1.size());
+  REQUIRE(to_string(received) == study_in_scarlet_ch1);
 }
 
 TEST_CASE_METHOD(

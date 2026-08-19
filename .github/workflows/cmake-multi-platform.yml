@@ -22,7 +22,7 @@ jobs:
     name: clang-format + clang-tidy
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       # gcc-15 is required even though nothing here is built with it: clang-20
       # needs GCC 15's libstdc++ to parse this project in C++23 mode, and the
@@ -83,7 +83,7 @@ jobs:
           - { os: macos-26-intel, cc: clang-20, cxx: clang++-20 }
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       # socat provides the virtual PTY pair the tests run against; catch2 keeps
       # CMake from fetching and rebuilding Catch2 from source.
@@ -152,7 +152,7 @@ jobs:
     name: ASan + UBSan
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       # Catch2 is deliberately NOT installed here. A prebuilt, uninstrumented
       # Catch2 linked against instrumented code makes libc++'s container

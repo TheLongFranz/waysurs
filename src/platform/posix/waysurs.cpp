@@ -13,10 +13,12 @@
 
 // Posix headers
 #include <fcntl.h>
+#include <sys/types.h> // ssize_t
 #include <termios.h>
 #include <unistd.h>
 
 // Library headers
+#include <waysurs/error.hpp>
 #include <waysurs/waysurs.hpp>
 
 namespace waysurs {
@@ -146,6 +148,17 @@ private:
 
     auto discard_close() -> void { [[maybe_unused]] const auto _{close()}; }
 
+    /// @note Re-issues a syscall for as long as a signal interrupts it. errno is only meaningful
+    /// once a call has failed, so it is read solely on the negative branch.
+    template<typename Fn>
+    [[nodiscard]] static auto retry_on_eintr(Fn syscall) -> ssize_t {
+      ssize_t result{};
+      do {
+        result = syscall();
+      } while (result < 0 && errno == EINTR);
+      return result;
+    }
+
 public:
     impl() = default;
     ~impl() { discard_close(); }
@@ -238,54 +251,74 @@ public:
       return {};
     }
 
+    /// @note A read is deliberately single-shot: the port cannot tell us how much the sender
+    /// still intends to send, so returning whatever has arrived is the only honest answer. A
+    /// caller that needs a fixed number of bytes loops until it has them.
     [[nodiscard]] auto read(std::size_t buffer_size) const
       -> std::expected<std::vector<std::byte>, error> {
-      if (is_open()) {
-        std::vector<std::byte> read_buf(buffer_size);
-        const auto             bytes_read = ::read(m_port_id, read_buf.data(), read_buf.size());
-        if (bytes_read < 0) {
-          return std::unexpected(
-            detail::make_error(error_type::read, "Error reading buffer", errno)
-          );
-        }
-
-        read_buf.resize(bytes_read);
-        return read_buf;
-      }
-      return std::unexpected(
-        detail::make_error(error_type::config, "Port has not been configured")
-      );
-    }
-
-    [[nodiscard]] auto read(std::span<std::byte> buffer) const
-      -> std::expected<std::size_t, error> {
-      if (is_open()) {
-        const auto bytes_read = ::read(m_port_id, buffer.data(), buffer.size());
-        if (bytes_read < 0) {
-          return std::unexpected(
-            detail::make_error(error_type::read, "Error reading buffer", errno)
-          );
-        }
-        return bytes_read;
-      }
-      return std::unexpected(
-        detail::make_error(error_type::config, "Port has not been configured")
-      );
-    }
-
-    [[nodiscard]] auto write(std::span<const std::byte> buffer) const
-      -> std::expected<std::size_t, error> {
-      if (is_open()) {
-        if (const auto result = ::write(m_port_id, buffer.data(), buffer.size()); result >= 0) {
-          return static_cast<std::size_t>(result);
-        }
+      if (!is_open()) {
         return std::unexpected(
-          detail::make_error(error_type::write, "Error writing to buffer", errno)
+          detail::make_error(error_type::config, "Port has not been configured")
         );
       }
-      return std::unexpected(
-        detail::make_error(error_type::config, "Port has not been configured")
-      );
+
+      std::vector<std::byte> read_buf(buffer_size);
+      const auto             bytes_read{retry_on_eintr([&] {
+        return ::read(m_port_id, read_buf.data(), read_buf.size());
+      })};
+      if (bytes_read < 0) {
+        return std::unexpected(detail::make_error(error_type::read, "Error reading buffer", errno));
+      }
+
+      read_buf.resize(static_cast<std::size_t>(bytes_read));
+      return read_buf;
+    }
+
+    /// @see read(std::size_t) for why a short read is not an error
+    [[nodiscard]] auto read(std::span<std::byte> buffer) const
+      -> std::expected<std::size_t, error> {
+      if (!is_open()) {
+        return std::unexpected(
+          detail::make_error(error_type::config, "Port has not been configured")
+        );
+      }
+
+      const auto bytes_read{retry_on_eintr([&] {
+        return ::read(m_port_id, buffer.data(), buffer.size());
+      })};
+      if (bytes_read < 0) {
+        return std::unexpected(detail::make_error(error_type::read, "Error reading buffer", errno));
+      }
+      return static_cast<std::size_t>(bytes_read);
+    }
+
+    /// @note Unlike read(), a write loops until the whole buffer is handed to the driver. A
+    /// single ::write() stops at the driver's buffer limit, so a short count is routine rather
+    /// than a failure, and a caller asking to send N bytes means all N.
+    /// @warning On a blocking port this waits for the peer to drain. Sending more than the
+    /// driver will buffer with nothing reading the other end blocks until something does.
+    [[nodiscard]] auto write(std::span<const std::byte> buffer) const
+      -> std::expected<std::size_t, error> {
+      if (!is_open()) {
+        return std::unexpected(
+          detail::make_error(error_type::config, "Port has not been configured")
+        );
+      }
+
+      std::size_t total_written{0};
+      while (total_written < buffer.size()) {
+        const auto remaining{buffer.subspan(total_written)};
+        const auto bytes_written{retry_on_eintr([&] {
+          return ::write(m_port_id, remaining.data(), remaining.size());
+        })};
+        if (bytes_written < 0) {
+          return std::unexpected(
+            detail::make_error(error_type::write, "Error writing to buffer", errno)
+          );
+        }
+        total_written += static_cast<std::size_t>(bytes_written);
+      }
+      return total_written;
     }
 
     [[nodiscard]] auto write(const std::string_view buffer) const
