@@ -333,6 +333,8 @@ TEST_CASE_METHOD(ports_fixture, "move semantics: moved to serial port succeeds t
   auto port_tx = std::move(tx);
   auto port_rx = std::move(rx);
 
+  REQUIRE_FALSE(tx.is_open());
+  REQUIRE_FALSE(rx.is_open());
   REQUIRE(port_tx.is_open());
   REQUIRE(port_rx.is_open());
 
