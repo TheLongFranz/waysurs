@@ -38,7 +38,7 @@ namespace waysurs {
   /// @note returns list of active serial ports on success, error on failure. No ports found is
   /// never an error, if no ports are found then an empty vector is returned. The default way to
   /// check if the return value is safe is if(has_value() && !empty())
-  [[nodiscard, maybe_unused]] auto list_ports() -> std::expected<std::vector<std::string>, error>;
+  [[nodiscard]] auto list_ports() -> std::expected<std::vector<std::string>, error>;
 
   class serial_port {
     struct impl;
