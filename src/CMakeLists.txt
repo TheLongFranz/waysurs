@@ -1,8 +1,12 @@
 add_library(waysurs_waysurs STATIC)
 add_library(waysurs::waysurs ALIAS waysurs_waysurs)
 
-target_include_directories(
-    waysurs_waysurs PUBLIC "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
+target_sources(
+    waysurs_waysurs
+    PUBLIC FILE_SET HEADERS
+    BASE_DIRS ${PROJECT_SOURCE_DIR}/include
+    FILES ${PROJECT_SOURCE_DIR}/include/waysurs/waysurs.hpp
+    ${PROJECT_SOURCE_DIR}/include/waysurs/error.hpp
 )
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
@@ -15,7 +19,6 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
         "-framework CoreFoundation"
         "-framework IOKit"
     )
-
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     target_sources(waysurs_waysurs PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/platform/posix/waysurs.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/platform/posix/enumerate_linux.cpp)
@@ -26,3 +29,10 @@ endif()
 set_property(TARGET waysurs_waysurs PROPERTY EXPORT_NAME waysurs)
 
 target_compile_features(waysurs_waysurs PUBLIC cxx_std_23)
+
+if(PROJECT_IS_TOP_LEVEL)
+    install(TARGETS waysurs_waysurs
+        EXPORT waysursTargets
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        FILE_SET HEADERS DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+endif()
