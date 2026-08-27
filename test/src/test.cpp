@@ -26,8 +26,7 @@
 #include "ports_fixture.hpp"
 
 TEST_CASE("list_ports()") {
-  const auto result{waysurs::list_ports()};
-  CHECK_RESULT(result);
+  CHECK_RESULT(waysurs::list_ports());
 }
 
 TEST_CASE_METHOD(ports_fixture, "open(): fails with non-standard baud rates", "[serial]") {
@@ -126,6 +125,10 @@ TEST_CASE_METHOD(
   const auto write_result_byte_span(tx.write(std::as_bytes(std::span{msg})));
   CHECK_RESULT(write_result_byte_span);
   REQUIRE(write_result_byte_span == msg.size());
+
+  const auto bytes_read{rx.read(msg.size())};
+  CHECK_RESULT(bytes_read);
+  REQUIRE(to_string(bytes_read.value()) == msg);
 }
 
 TEST_CASE_METHOD(
@@ -138,6 +141,10 @@ TEST_CASE_METHOD(
   const auto write_result_string_view{tx.write(msg)};
   CHECK_RESULT(write_result_string_view);
   REQUIRE(write_result_string_view == msg.size());
+
+  const auto bytes_read{rx.read(msg.size())};
+  CHECK_RESULT(bytes_read);
+  REQUIRE(to_string(bytes_read.value()) == msg);
 }
 
 TEST_CASE("write(): before opening port fails with error::config") {

@@ -10,24 +10,26 @@
 #include <waysurs/error.hpp>
 #include <waysurs/waysurs.hpp>
 
-namespace waysurs {
-  [[nodiscard]] auto list_ports() -> std::expected<std::vector<std::string>, error> {
-    std::vector<std::string> out{};
-    struct stat              buffer{};
+[[nodiscard]] auto waysurs::list_ports() -> std::expected<std::vector<std::string>, error> {
+  std::vector<std::string> out{};
 
-    const auto p{std::filesystem::path{"/dev/serial/by-id"}};
-    // const auto p{std::filesystem::path{"/sys/class/tty"}};
-
-    for (const auto& it: std::filesystem::directory_iterator(p)) {
-      if (const auto result = lstat(it.path().c_str(), &buffer); result >= 0) {
-        if (std::filesystem::is_symlink(it.symlink_status())) {
-          const auto symlink_points_at = std::filesystem::read_symlink(it);
-          const auto canonical_path    = std::filesystem::canonical(symlink_points_at);
-          out.emplace_back(canonical_path.string());
-        }
+  try {
+    for (const auto& it: std::filesystem::directory_iterator("/dev/serial/by-id")) {
+      if (it.is_symlink()) {
+        const auto target{std::filesystem::canonical(std::filesystem::read_symlink(it))};
+        out.emplace_back(target.string());
       }
     }
-
+    return out;
+  } catch (const std::filesystem::filesystem_error&) {
+    // list_ports() always returns a vector, if there are no serial devices then the vector
+    // will be empty. I don't consider a lack of serial devices to be an error but if we end
+    // up in here then we should be polite and catch the exception.
     return out;
   }
-} // namespace waysurs
+  return std::unexpected(
+    detail::make_error(
+      error_type::config, "If you've reached this point then something has gone very wrong"
+    )
+  );
+}
