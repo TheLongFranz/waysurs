@@ -168,9 +168,8 @@ On macOS Homebrew's LLVM is keg-only, so point the tools at it explicitly, e.g.
 
 ## Todo
 
-1. port enumeration (Linux)
-1. custom baud rates
 1. Windows
+1. custom baud rates
 1. fuzzing
 
 # License
