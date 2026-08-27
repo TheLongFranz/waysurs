@@ -1,13 +1,13 @@
 [![CI](https://img.shields.io/github/actions/workflow/status/TheLongFranz/waysurs/cmake-multi-platform.yml?style=flat&logo=github&label=CI)](https://github.com/TheLongFranz/waysurs/actions/workflows/cmake-multi-platform.yml)
 [![Licence](https://img.shields.io/github/license/TheLongFranz/waysurs?style=flat)](./LICENSE)
 ![C++23](https://img.shields.io/badge/c++-%2300599C.svg?style=flat&logo=c%2B%2B&logoColor=white)
-![Platforms](https://img.shields.io/badge/platforms-Linux%20%7C%20macOS-informational?style=flat)
+![Platforms](https://img.shields.io/badge/platforms-Linux_macOS_Windows-informational?style=flat)
 
 # WAYSURS - Why Are You Still Using RS232?
 
 ## What is WAYSURS for?
 
-If you are unfortunate enough to find yourself needing to communicate with a device using RS232, you might as well do it using this modern little C++ library. WAYSURS is an MIT-Licensed cross-platform-ish modern **C++23** serial port library with std::expected based error handling & PIMPL per-platform backends.
+If you are unfortunate enough to find yourself needing to communicate with a device using RS232, you might as well do it using this little C++ library. WAYSURS is an MIT-Licensed cross-platform modern **C++23** serial port library with std::expected based error handling & PIMPL per-platform backends.
 
 ## Usage
 
@@ -68,9 +68,7 @@ sudo apt install ninja-build cmake
 sudo apt install catch2 socat
 ```
 
-### Windows **(Currently Unsupported)**
-
-If Windows **were** supported you would run this command
+### Windows
 
 ```powershell
 choco install llvm --version=20.1.8

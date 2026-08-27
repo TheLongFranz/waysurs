@@ -1,8 +1,7 @@
 add_executable(tests src/test.cpp)
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    message(FATAL_ERROR "Windows is not currently supported.")
-    # target_sources(tests PRIVATE platform/windows/serial_listener.cpp)
+    target_sources(tests PRIVATE platform/windows/serial_listener.cpp)
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin" OR CMAKE_SYSTEM_NAME STREQUAL "Linux")
     target_sources(tests PRIVATE platform/posix/serial_listener.cpp)
 else()

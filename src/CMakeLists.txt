@@ -10,8 +10,7 @@ target_sources(
 )
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    message(FATAL_ERROR "Windows is not currently supported.")
-    # target_sources(waysurs_waysurs PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/platform/windows/waysurs.cpp)
+    target_sources(waysurs_waysurs PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/platform/windows/waysurs.cpp)
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     target_sources(waysurs_waysurs PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/platform/posix/waysurs.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/platform/posix/enumerate_macos.cpp)
