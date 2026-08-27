@@ -23,7 +23,7 @@ static constexpr auto string_length{256};
 
 namespace waysurs {
   [[nodiscard]] auto list_ports() -> std::expected<std::vector<std::string>, error> {
-    std::vector<std::string> out;
+    std::vector<std::string> out{};
     auto                     matching_services{io_iterator_t{}};
     auto*                    classes_to_match{IOServiceMatching(kIOSerialBSDServiceValue)};
     auto                     service{io_object_t{}};
