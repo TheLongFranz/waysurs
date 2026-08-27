@@ -1,5 +1,9 @@
 set(LLVM_MAJOR_VERSION 20)
 
+set(EXE "")
+if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
+    set(EXE ".exe")
+endif()
 # try_compile() re-runs this toolchain in a fresh CMake instance and does not
 # forward -D compiler settings, because a toolchain is normally what defines
 # them. Without this list the auto-detection below runs inside the compiler
@@ -74,13 +78,13 @@ endif()
 message(STATUS "Using LLVM ${LLVM_MAJOR_VERSION} tools from: ${LLVM_BIN_DIR}")
 
 # ─── Compilers ────────────────────────────────────────────────────────────────
-set(CMAKE_C_COMPILER "${LLVM_BIN_DIR}/clang" CACHE FILEPATH "C compiler")
-set(CMAKE_CXX_COMPILER "${LLVM_BIN_DIR}/clang++" CACHE FILEPATH "C++ compiler")
+set(CMAKE_C_COMPILER "${LLVM_BIN_DIR}/clang${EXE}" CACHE FILEPATH "C compiler")
+set(CMAKE_CXX_COMPILER "${LLVM_BIN_DIR}/clang++${EXE}" CACHE FILEPATH "C++ compiler")
 
 # ─── Binutils ─────────────────────────────────────────────────────────────────
-set(CMAKE_AR "${LLVM_BIN_DIR}/llvm-ar" CACHE FILEPATH "Archiver")
-set(CMAKE_NM "${LLVM_BIN_DIR}/llvm-nm" CACHE FILEPATH "Symbol lister")
-set(CMAKE_RANLIB "${LLVM_BIN_DIR}/llvm-ranlib" CACHE FILEPATH "Archive indexer")
+set(CMAKE_AR "${LLVM_BIN_DIR}/llvm-ar${EXE}" CACHE FILEPATH "Archiver")
+set(CMAKE_NM "${LLVM_BIN_DIR}/llvm-nm${EXE}" CACHE FILEPATH "Symbol lister")
+set(CMAKE_RANLIB "${LLVM_BIN_DIR}/llvm-ranlib${EXE}" CACHE FILEPATH "Archive indexer")
 
 # ld.lld doesn't exist on macOS — use lld via -fuse-ld instead
 if(NOT CMAKE_HOST_SYSTEM_NAME STREQUAL "Darwin")
@@ -88,10 +92,10 @@ if(NOT CMAKE_HOST_SYSTEM_NAME STREQUAL "Darwin")
 endif()
 
 # ─── Analysis tools ───────────────────────────────────────────────────────────
-set(CMAKE_C_CLANG_TIDY "${LLVM_BIN_DIR}/clang-tidy" CACHE STRING "clang-tidy (C)" FORCE)
-set(CMAKE_CXX_CLANG_TIDY "${LLVM_BIN_DIR}/clang-tidy" CACHE STRING "clang-tidy (C++)" FORCE)
-set(CMAKE_CLANGD_EXECUTABLE "${LLVM_BIN_DIR}/clangd" CACHE STRING "clangd" FORCE)
-set(CLANG_FORMAT_EXECUTABLE "${LLVM_BIN_DIR}/clang-format" CACHE STRING "clang-format" FORCE)
+set(CMAKE_C_CLANG_TIDY "${LLVM_BIN_DIR}/clang-tidy${EXE}" CACHE STRING "clang-tidy (C)" FORCE)
+set(CMAKE_CXX_CLANG_TIDY "${LLVM_BIN_DIR}/clang-tidy${EXE}" CACHE STRING "clang-tidy (C++)" FORCE)
+set(CMAKE_CLANGD_EXECUTABLE "${LLVM_BIN_DIR}/clangd${EXE}" CACHE STRING "clangd" FORCE)
+set(CLANG_FORMAT_EXECUTABLE "${LLVM_BIN_DIR}/clang-format${EXE}" CACHE STRING "clang-format" FORCE)
 
 message(STATUS "  clang:        ${CMAKE_CXX_COMPILER}")
 message(STATUS "  clang-tidy:   ${CMAKE_CXX_CLANG_TIDY}")

@@ -72,10 +72,16 @@ sudo apt install catch2 socat
 
 ```powershell
 choco install llvm --version=20.1.8
-choco install ninja cmake
-# Once I have figured out what I will use for testing virtual ports on Windows I will add it here
-choco install catch2 {what I will use for testing virtual ports on Windows}
+choco install ninja cmake catch2
 ```
+
+> Note: You only need to do this if you want to run the tests yourself, these are always run in CI so it isn't strictly necessary.
+
+Setup for running the tests on windows is a little bit more involved as this project uses com0com for virtual serial port pairs.
+
+````powershell
+
+``
 
 ## Installation (CMake)
 
@@ -97,7 +103,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(waysurs)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE waysurs::waysurs)
-```
+````
 
 ## Building (MacOS / Linux)
 
