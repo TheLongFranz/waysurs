@@ -140,6 +140,8 @@ jobs:
       - name: Install LLVM ${{ env.LLVM_VERSION }} (Windows)
         if: runner.os == 'Windows'
         run: |
+          choco install llvm --version=20.1.8 -y
+          choco install ninja
 
       - name: Configure
         run: |
