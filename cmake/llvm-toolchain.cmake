@@ -12,8 +12,6 @@ endif()
 list(APPEND CMAKE_TRY_COMPILE_PLATFORM_VARIABLES
     CMAKE_C_COMPILER
     CMAKE_CXX_COMPILER
-    CMAKE_C_CLANG_TIDY
-    CMAKE_CXX_CLANG_TIDY
 )
 
 # ─── Skip if a compiler is already defined (e.g. via CMakeUserPresets.json) ───
