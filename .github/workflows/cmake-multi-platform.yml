@@ -71,6 +71,10 @@ jobs:
   build:
     name: ${{ matrix.os }} / ${{ matrix.cxx }}
     runs-on: ${{ matrix.os }}
+    # Only the arm64 leg sets `experimental`: there is no signed com0com driver for it, so it
+    # can only build the driver from source, never install or test against it (see the "Build
+    # com0com from source (Windows arm64)" step below). A failure there shouldn't block CI.
+    continue-on-error: ${{ matrix.experimental || false }}
     strategy:
       fail-fast: false
       matrix:
@@ -83,6 +87,7 @@ jobs:
           - { os: macos-26-intel, cc: clang-20, cxx: clang++-20 }
           - { os: windows-latest, cc: clang-20, cxx: clang++-20 }
           - { os: windows-latest, cc: cl, cxx: cl }
+          - { os: windows-11-arm, cc: cl, cxx: cl, experimental: true }
 
     steps:
       - uses: actions/checkout@v6
@@ -142,6 +147,57 @@ jobs:
         run: |
           choco install llvm --version=20.1.8 -y
           choco install ninja
+
+      # The signed x86/x64 installer is checked directly into TheLongFranz/com0com (a fork of
+      # vovsoft/com0com that adds ARM64 support) and is WHQL cross-signed, so it needs no
+      # test-signing mode. setupc.exe's directory is read back from the registry key the
+      # installer writes (its default install dir depends on how the installer was built).
+      - name: Install com0com (Windows x64)
+        if: runner.os == 'Windows' && runner.arch == 'X64'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          $installer = "com0com-setup.exe"
+          Invoke-WebRequest `
+            -Uri "https://raw.githubusercontent.com/TheLongFranz/com0com/main/com0com%20v.3.0.0%20setup%2032%2B64-bit%20signed.exe" `
+            -OutFile $installer
+
+          $proc = Start-Process -FilePath $installer -ArgumentList "/S" -Wait -NoNewWindow -PassThru
+          if ($proc.ExitCode -ne 0) {
+            throw "com0com installer exited with code $($proc.ExitCode)"
+          }
+
+          $installDir = $null
+          for ($i = 0; $i -lt 20 -and -not $installDir; $i++) {
+            $installDir = (Get-ItemProperty -Path "HKLM:\Software\com0com" -Name "Install_Dir" `
+              -ErrorAction SilentlyContinue).Install_Dir
+            if (-not $installDir) { Start-Sleep -Seconds 1 }
+          }
+          if (-not $installDir) {
+            throw "com0com installer did not register an Install_Dir"
+          }
+
+          $setupc = Join-Path $installDir "setupc.exe"
+          if (-not (Test-Path $setupc)) {
+            throw "setupc.exe not found at $setupc"
+          }
+
+          "WAYSURS_COM0COM_SETUPC=$setupc" >> $env:GITHUB_ENV
+
+      # Best-effort only: there is no signed prebuilt driver for ARM64, and the fork's own
+      # install-arm64.ps1 needs Windows test-signing mode enabled, which needs a reboot that a
+      # single ephemeral hosted-runner job can't perform. This only proves the fork still builds
+      # on this architecture -- it never installs the driver, so WAYSURS_COM0COM_SETUPC is left
+      # unset and the Test step below is expected to fail here (see `experimental` above).
+      - name: Build com0com from source (Windows arm64)
+        if: runner.os == 'Windows' && runner.arch == 'ARM64'
+        shell: pwsh
+        run: |
+          git clone --depth 1 https://github.com/TheLongFranz/com0com.git com0com-src
+          if ($LASTEXITCODE -ne 0) { throw "git clone failed with exit code $LASTEXITCODE" }
+
+          & "com0com-src/source/com0com-3.0.0.0/build-arm64.ps1"
 
       - name: Configure
         run: |
