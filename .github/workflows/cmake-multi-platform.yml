@@ -142,11 +142,13 @@ jobs:
             echo "cxx=${{ matrix.cxx }}" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Install LLVM ${{ env.LLVM_VERSION }} (Windows)
+      - name: Install ninja (Windows)
         if: runner.os == 'Windows'
-        run: |
-          choco install llvm --version=20.1.8 -y
-          choco install ninja
+        run: choco install ninja
+
+      - name: Install LLVM ${{ env.LLVM_VERSION }} (Windows)
+        if: runner.os == 'Windows' && matrix.cc == 'clang-20'
+        run: choco install llvm --version=20.1.8 -y
 
       # The signed x86/x64 installer is checked directly into TheLongFranz/com0com (a fork of
       # vovsoft/com0com that adds ARM64 support) and is WHQL cross-signed, so it needs no
