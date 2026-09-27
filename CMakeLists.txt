@@ -4,6 +4,15 @@ project(waysurs VERSION 0.1.0 LANGUAGES CXX)
 
 include(GNUInstallDirs)
 
+add_compile_options(
+    "$<$<CXX_COMPILER_ID:Clang,GNU>:-Wall;-Wextra;-Wpedantic;-Wshadow;-Wnon-virtual-dtor;-Wno-system-headers;-Wunreachable-code;-Wuninitialized;-Wold-style-cast;-Werror;-ftrivial-auto-var-init=pattern;-fdiagnostics-color=always;-ftemplate-backtrace-limit=0>"
+    "$<$<CXX_COMPILER_ID:MSVC>:/W4;/permissive-;/WX>"
+)
+
+add_compile_options(
+    "$<$<AND:$<CONFIG:Release>,$<CXX_COMPILER_ID:Clang,GNU>>:-O3;-DNDEBUG;-U_FORTIFY_SOURCE;-D_FORTIFY_SOURCE=2;-fstack-protector-strong>"
+)
+
 if(PROJECT_IS_TOP_LEVEL)
     # setting export compile commands here globally so that clang-tidy checks are ignored in imported builds
     set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
