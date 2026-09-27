@@ -203,6 +203,10 @@ jobs:
           & "com0com-src/source/com0com-3.0.0.0/build-arm64.ps1" -SkipSign
 
       - name: Configure
+        # Windows runners default to pwsh, where a trailing "\" isn't a line continuation -- it
+        # was landing as a stray positional argument (cmake read it as the source dir). bash
+        # keeps this multi-line form working the same way on every OS.
+        shell: bash
         run: |
           cmake --preset release \
             -DCMAKE_C_COMPILER=${{ steps.cc.outputs.cc }} \
