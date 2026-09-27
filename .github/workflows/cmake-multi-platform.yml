@@ -202,6 +202,14 @@ jobs:
 
           & "com0com-src/source/com0com-3.0.0.0/build-arm64.ps1" -SkipSign
 
+      # cl.exe (and link.exe) need INCLUDE/LIB/PATH from vcvarsall to find the CRT and Windows
+      # SDK; unlike clang, they don't auto-detect a VS install. Only the cl leg needs this.
+      - name: Setup MSVC developer environment (Windows)
+        if: runner.os == 'Windows' && matrix.cc == 'cl'
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: ${{ runner.arch == 'ARM64' && 'arm64' || 'x64' }}
+
       - name: Configure
         # Windows runners default to pwsh, where a trailing "\" isn't a line continuation -- it
         # was landing as a stray positional argument (cmake read it as the source dir). bash
