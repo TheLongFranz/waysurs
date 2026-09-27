@@ -190,6 +190,9 @@ jobs:
       # single ephemeral hosted-runner job can't perform. This only proves the fork still builds
       # on this architecture -- it never installs the driver, so WAYSURS_COM0COM_SETUPC is left
       # unset and the Test step below is expected to fail here (see `experimental` above).
+      # -SkipSign avoids creating/using a self-signed test cert: New-SelfSignedCertificate's
+      # private key isn't reliably usable by signtool in a hosted runner's non-interactive
+      # session, and we never install the package here anyway, so nothing needs to be signed.
       - name: Build com0com from source (Windows arm64)
         if: runner.os == 'Windows' && runner.arch == 'ARM64'
         shell: pwsh
@@ -197,7 +200,7 @@ jobs:
           git clone --depth 1 https://github.com/TheLongFranz/com0com.git com0com-src
           if ($LASTEXITCODE -ne 0) { throw "git clone failed with exit code $LASTEXITCODE" }
 
-          & "com0com-src/source/com0com-3.0.0.0/build-arm64.ps1"
+          & "com0com-src/source/com0com-3.0.0.0/build-arm64.ps1" -SkipSign
 
       - name: Configure
         run: |

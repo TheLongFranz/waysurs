@@ -6,6 +6,4 @@
 #include <waysurs/error.hpp>
 #include <waysurs/waysurs.hpp>
 
-namespace waysurs {
-
-} // namespace waysurs
+namespace waysurs {} // namespace waysurs
