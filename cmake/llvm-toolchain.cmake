@@ -79,6 +79,25 @@ message(STATUS "Using LLVM ${LLVM_MAJOR_VERSION} tools from: ${LLVM_BIN_DIR}")
 set(CMAKE_C_COMPILER "${LLVM_BIN_DIR}/clang${EXE}" CACHE FILEPATH "C compiler")
 set(CMAKE_CXX_COMPILER "${LLVM_BIN_DIR}/clang++${EXE}" CACHE FILEPATH "C++ compiler")
 
+# ─── Resource compiler (Windows only) ──────────────────────────────────────────
+# CMake's Windows-Clang platform module requires an RC compiler to enable the
+# CXX language at all, even for projects with no .rc files. Not every LLVM
+# distribution ships llvm-rc, so fall back to the Windows SDK's rc.exe.
+if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
+    if(EXISTS "${LLVM_BIN_DIR}/llvm-rc${EXE}")
+        set(CMAKE_RC_COMPILER "${LLVM_BIN_DIR}/llvm-rc${EXE}" CACHE FILEPATH "Resource compiler")
+    else()
+        file(GLOB _WINSDK_RC_CANDIDATES "C:/Program Files (x86)/Windows Kits/10/bin/*/x64/rc.exe")
+        if(_WINSDK_RC_CANDIDATES)
+            list(SORT _WINSDK_RC_CANDIDATES ORDER DESCENDING)
+            list(GET _WINSDK_RC_CANDIDATES 0 _WINSDK_RC)
+            set(CMAKE_RC_COMPILER "${_WINSDK_RC}" CACHE FILEPATH "Resource compiler")
+        else()
+            message(WARNING "No resource compiler found (checked LLVM bin and Windows SDK). Set CMAKE_RC_COMPILER manually.")
+        endif()
+    endif()
+endif()
+
 # ─── Binutils ─────────────────────────────────────────────────────────────────
 set(CMAKE_AR "${LLVM_BIN_DIR}/llvm-ar${EXE}" CACHE FILEPATH "Archiver")
 set(CMAKE_NM "${LLVM_BIN_DIR}/llvm-nm${EXE}" CACHE FILEPATH "Symbol lister")

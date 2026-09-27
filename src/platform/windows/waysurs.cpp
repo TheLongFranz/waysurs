@@ -7,5 +7,5 @@
 #include <waysurs/waysurs.hpp>
 
 namespace waysurs {
-    
-}
+
+} // namespace waysurs

@@ -2,6 +2,9 @@ add_executable(tests src/test.cpp)
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     target_sources(tests PRIVATE platform/windows/serial_listener.cpp)
+    # MSVC's ucrt headers mark std::getenv deprecated in favour of _dupenv_s;
+    # -Werror would otherwise turn that warning fatal for helpers.hpp's use of it.
+    target_compile_definitions(tests PRIVATE _CRT_SECURE_NO_WARNINGS)
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin" OR CMAKE_SYSTEM_NAME STREQUAL "Linux")
     target_sources(tests PRIVATE platform/posix/serial_listener.cpp)
 else()
